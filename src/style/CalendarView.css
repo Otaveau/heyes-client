@@ -1,0 +1,388 @@
+/* ===================================
+ * TABLE DES MATIÈRES
+ * ===================================
+ * 1. Variables et Reset
+ * 2. Navigation et En-tête
+ * 3. Jours Spéciaux
+ * 4. Ressources et Équipes
+ * 5. Drag and Drop
+ * 6. États Spéciaux
+ * 7. Éléments Temporaires
+ * 8. Animations
+ * 9. Media Queries
+ * =================================== */
+
+/* ===================================
+ * 1. Variables et Reset
+ * =================================== */
+ :root {
+  /* Couleurs primaires */
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-primary-light: #60a5fa;
+  
+  /* Couleurs de fond */
+  --color-bg-light: #f8f9fa;
+  --color-bg-white: #ffffff;
+  --color-bg-hover: #f3f4f6;
+
+  /* Couleurs pour états */
+  --color-today-bg: rgba(59, 130, 246, 0.05);
+  --color-weekend-bg: #f3f4f6;
+  --color-holiday-bg: #fef3c7;
+  --color-highlight: rgba(74, 108, 247, 0.5);
+  
+  /* Couleurs de texte */
+  --color-text-dark: #1f2937;
+  --color-text-medium: #4b5563;
+  --color-text-light: #666666;
+  
+  /* Bordures */
+  --color-border-light: #e2e8f0;
+  --color-border-medium: #d1d5db;
+  
+  /* Espacement */
+  --spacing-xs: 3px;
+  --spacing-sm: 5px;
+  --spacing-md: 10px;
+  --spacing-lg: 15px;
+  
+  /* Ombres */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.05);
+  
+  /* Typographie */
+  --font-size-xs: 0.85rem;
+  --font-size-sm: 0.9rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.1rem;
+  
+  /* Border-radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+/* ===================================
+ * 2. Navigation et En-tête
+ * =================================== */
+.fc-custom-nav-container {
+  margin-bottom: var(--spacing-lg);
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+}
+
+.fc-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+/* Styles communs pour tous les boutons */
+.fc-custom-nav-container button.fc-button {
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-medium);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.fc-custom-nav-container button.fc-button:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-medium);
+  color: var(--color-text-dark);
+}
+
+/* Groupes de boutons */
+.fc-year-nav,
+.fc-view-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Style pour l'affichage de l'année */
+.fc-year-display {
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-dark);
+  padding: 0 8px;
+}
+
+/* Style pour l'affichage de la semaine */
+.fc-week-display {
+  display: inline-block;
+  padding: 0 8px;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: center;
+  background-color: var(--color-bg-hover);
+  border-radius: var(--radius-sm);
+  margin: 0 4px;
+}
+
+/* Styles pour les boutons de mois */
+.fc-months-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+}
+
+.fc-month-button {
+  padding: 4px 8px !important;
+  font-size: var(--font-size-xs) !important;
+  min-width: 40px;
+}
+
+/* Bouton actif */
+.fc-button-active {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary-dark) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Bouton "Aujourd'hui" spécial */
+button.fc-today-button {
+  background-color: #f0f9ff;
+  border-color: #93c5fd;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+button.fc-today-button:hover {
+  background-color: #dbeafe;
+  border-color: var(--color-primary-light);
+}
+
+/* ===================================
+ * 3. Jours Spéciaux
+ * =================================== */
+/* Styles communs pour les jours fériés et weekends */
+.fc .holiday-slot,
+.fc .weekend-slot,
+.fc .holiday-column,
+.fc .weekend-column {
+  background-color: rgba(240, 240, 240, 0.5) !important;
+}
+
+.fc .holiday-slot .fc-timeline-slot-cushion,
+.fc .weekend-slot .fc-timeline-slot-cushion,
+.fc .holiday-column .fc-timeline-slot-cushion,
+.fc .weekend-column .fc-timeline-slot-cushion {
+  color: var(--color-text-light);
+}
+
+/* Styles spécifiques */
+.holiday-column {
+  background-color: var(--color-holiday-bg) !important; /* Jaune pâle */
+}
+
+.weekend-column {
+  background-color: var(--color-weekend-bg) !important; /* Gris très clair */
+}
+
+.fc-day-today {
+  background-color: var(--color-today-bg) !important;
+  border-left: 2px solid var(--color-primary) !important;
+  border-right: 2px solid var(--color-primary) !important;
+}
+
+/* ===================================
+ * 4. Ressources et Équipes
+ * =================================== */
+/* Style pour les lignes d'équipes */
+.fc-timeline-lane.team-resource-lane {
+  background-color: var(--color-bg-hover) !important;
+  cursor: not-allowed !important;
+}
+
+/* Empêcher visuellement le dépôt sur les équipes */
+.fc-timeline-lane.team-resource-lane.fc-highlight {
+  background-color: #fee2e2 !important; /* Rouge clair pour indiquer qu'on ne peut pas déposer */
+}
+
+/* Renforcer les styles pour les en-têtes d'équipe */
+.fc-datagrid-cell.team-header {
+  font-weight: bold !important;
+  background-color: #e5e7eb !important;
+  border-bottom: 1px solid var(--color-border-medium) !important;
+}
+
+/* Style pour propriétaires (enfants des équipes) */
+.fc-datagrid-cell.owner-cell {
+  padding-left: 20px !important;
+}
+
+/* ===================================
+ * 5. Drag and Drop
+ * =================================== */
+/* Styles de base pour les cartes de tâches */
+.task-card {
+  touch-action: none;
+  transition: all 0.2s ease;
+  cursor: move;
+}
+
+.fc-event {
+  cursor: move !important;
+  user-select: none;
+}
+.fc-timeline-event{
+  margin: 0!important;
+  padding: 0!important;
+}
+
+.task-card.dragging,
+.fc-event.task-card.fc-dragging {
+  opacity: 0.6;
+  transform: scale(0.98);
+}
+
+/* Conteneurs et wrappers */
+.task-card-wrapper.fc-event {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fc-event.task-card {
+  background-color: transparent;
+  border: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Feedback de drop */
+.fc-highlight {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border: 2px dashed var(--color-primary) !important;
+}
+
+.backlog-container.drag-active,
+.fc-view-harness.fc-drop-active {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 2px dashed var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ===================================
+ * 6. États Spéciaux
+ * =================================== */
+/* Traitement en cours */
+.processing .task-card {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Mise en surbrillance */
+.taskboard-highlight {
+  box-shadow: 0 0 0 2px var(--color-highlight), 0 0 15px rgba(74, 108, 247, 0.4);
+  border-radius: var(--radius-lg);
+  animation: pulse-border 1.5s infinite ease-in-out;
+  transition: all 0.15s ease-out;
+}
+
+.taskboard-highlight-intense {
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.7), 0 0 20px rgba(74, 108, 247, 0.6);
+}
+
+.dropzone-active {
+  background-color: rgba(74, 108, 247, 0.15) !important;
+  border: 2px dashed #4a6cf7 !important;
+  transform: scale(1.02);
+  transition: all 0.15s ease-out;
+}
+
+.potential-drop-target {
+  background-color: rgba(230, 230, 250, 0.3);
+  transition: background-color 0.3s ease;
+  border: 1px dashed #ccc;
+}
+
+/* ===================================
+ * 7. Éléments Temporaires
+ * =================================== */
+.task-ghost-element {
+  font-weight: bold;
+  border: 2px solid rgba(74, 108, 247, 0.7);
+  transform-origin: center center;
+  background-color: white !important;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  color: #333 !important;
+}
+
+.task-added {
+  animation: taskAddedAnimation 0.5s ease-in-out;
+}
+
+.temporary-task-placeholder {
+  background-color: rgba(74, 108, 247, 0.2);
+  border: 2px dashed rgba(74, 108, 247, 0.7);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+/* ===================================
+ * 8. Animations
+ * =================================== */
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.5), 0 0 15px rgba(74, 108, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.6), 0 0 20px rgba(74, 108, 247, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.5), 0 0 15px rgba(74, 108, 247, 0.4);
+  }
+}
+
+@keyframes taskAddedAnimation {
+  0% {
+    transform: scale(1);
+    background-color: rgba(74, 108, 247, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    background-color: rgba(74, 108, 247, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    background-color: inherit;
+  }
+}
+
+/* ===================================
+ * 9. Media Queries
+ * =================================== */
+@media (max-width: 768px) {
+  .month-full { display: none; }
+  .month-abbr { display: inline; }
+  
+  .fc-nav-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .fc-year-nav,
+  .fc-view-buttons {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 769px) {
+  .month-full { display: inline; }
+  .month-abbr { display: none; }
+}
