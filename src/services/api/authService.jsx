@@ -1,12 +1,11 @@
 import { fetchWithTimeout } from '../apiUtils/apiConfig';
-import { API_URL } from '../../constants/constants';
 import { handleResponse } from '../apiUtils/errorHandlers';
 
 export const validateToken = async (token) => {
     if (!token) throw new Error('Token requis');
 
     try {
-        const response = await fetchWithTimeout(`${API_URL}/auth/validate`, {
+        const response = await fetchWithTimeout('/api/auth/validate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -27,7 +26,7 @@ export const login = async (credentials) => {
     }
 
     try {
-        const response = await fetchWithTimeout(`${API_URL}/auth/login`, {
+        const response = await fetchWithTimeout('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -49,7 +48,7 @@ export const register = async (userData) => {
     }
 
     try {
-        const response = await fetchWithTimeout(`${API_URL}/auth/register`, {
+        const response = await fetchWithTimeout('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

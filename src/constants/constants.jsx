@@ -1,6 +1,6 @@
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
-export const REQUEST_TIMEOUT = 30000; // 30 secondes
+export const REQUEST_TIMEOUT = 15000; // 30 secondes
 
 export const STATUS_TYPES = {
   ENTRANT: 'entrant',
