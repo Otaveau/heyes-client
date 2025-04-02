@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
-import { API_URL } from '../../constants/constants';
+// Importez la fonction register du service auth
+import { register } from '../../services/api/authService';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -29,21 +30,13 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name || 'Utilisateur',
-          password: formData.password
-        })
+      // Utilisez le service auth au lieu d'un appel fetch direct
+      await register({
+        name: formData.name || 'Utilisateur',
+        password: formData.password
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de l\'inscription');
-      }
-
+      
+      // Redirigez vers la page de connexion après inscription réussie
       navigate('/login');
     } catch (err) {
       setError(err.message);

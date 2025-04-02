@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
-import { API_URL } from '../../constants/constants';
+// Importez la fonction login du service auth
+import { login } from '../../services/api/authService';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -26,20 +27,11 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: formData.name,
-          password: formData.password
-        })
+      // Utilisez le service auth au lieu d'un appel fetch direct
+      const data = await login({ 
+        name: formData.name,
+        password: formData.password
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
 
       localStorage.setItem('token', data.token);
       dispatch({
