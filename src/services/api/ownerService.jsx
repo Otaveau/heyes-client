@@ -1,10 +1,9 @@
 import { fetchWithTimeout, getAuthHeaders } from '../apiUtils/apiConfig';
-import { API_URL } from '../../constants/constants';
 import { handleResponse } from '../apiUtils/errorHandlers';
 
 export const fetchOwners = async () => {
     try {
-        const response = await fetchWithTimeout(`${API_URL}/owners`, {
+        const response = await fetchWithTimeout(`/api/owners`, {
             headers: getAuthHeaders()
         });
 
@@ -27,7 +26,7 @@ export const getOwnerById = async (id) => {
     try {
         if (!id) throw new Error('ID de propriétaire requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/owners/${id}`, {
+        const response = await fetchWithTimeout(`/api/owners/${id}`, {
             headers: getAuthHeaders()
         });
 
@@ -42,7 +41,7 @@ export const createOwner = async (ownerData) => {
     try {
         if (!ownerData?.name?.trim()) throw new Error('Nom de propriétaire requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/owners`, {
+        const response = await fetchWithTimeout(`/api/owners`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(ownerData)
@@ -60,7 +59,7 @@ export const updateOwner = async (id, ownerData) => {
         if (!id) throw new Error('ID de propriétaire requis');
         if (!ownerData?.name?.trim()) throw new Error('Nom de propriétaire requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/owners/${id}`, {
+        const response = await fetchWithTimeout(`/api/owners/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(ownerData)
@@ -77,7 +76,7 @@ export const deleteOwner = async (id) => {
     try {
         if (!id) throw new Error('ID de propriétaire requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/owners/${id}`, {
+        const response = await fetchWithTimeout(`/api/owners/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -93,7 +92,7 @@ export const getOwnerTasks = async (ownerId) => {
     try {
         if (!ownerId) throw new Error('ID de propriétaire requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/owners/${ownerId}/tasks`, {
+        const response = await fetchWithTimeout(`/api/owners/${ownerId}/tasks`, {
             headers: getAuthHeaders()
         });
 

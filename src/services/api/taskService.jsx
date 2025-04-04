@@ -1,5 +1,4 @@
 import { fetchWithTimeout, getAuthHeaders } from '../apiUtils/apiConfig';
-import { API_URL } from '../../constants/constants';
 import { handleResponse } from '../apiUtils/errorHandlers';
 import { ERROR_MESSAGES } from '../../constants/constants';
 
@@ -149,7 +148,7 @@ const validateTaskData = (taskData) => {
 
 export const fetchTasks = async () => {
     try {
-        const response = await fetchWithTimeout(`${API_URL}/tasks`, {
+        const response = await fetchWithTimeout(`/api/tasks`, {
             headers: getAuthHeaders()
         });
 
@@ -167,7 +166,7 @@ export const createTask = async (taskData) => {
         validateTaskData(taskData);
         const dataToServer = transformTaskForServer(taskData);
 
-        const response = await fetchWithTimeout(`${API_URL}/tasks`, {
+        const response = await fetchWithTimeout(`/api/tasks`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(dataToServer)
@@ -192,7 +191,7 @@ export const updateTask = async (id, taskData) => {
 
         const dataToServer = transformTaskForServer(taskData);
 
-        const response = await fetchWithTimeout(`${API_URL}/tasks/${taskId}`, {
+        const response = await fetchWithTimeout(`/api/tasks/${taskId}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify(dataToServer)
@@ -215,7 +214,7 @@ export const deleteTask = async (id) => {
     try {
         if (!id) throw new Error(ERROR_MESSAGES.TASK_ID_REQUIRED);
 
-        const response = await fetchWithTimeout(`${API_URL}/tasks/${id}`, {
+        const response = await fetchWithTimeout(`/api/tasks/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });

@@ -1,5 +1,4 @@
 import { fetchWithTimeout, getAuthHeaders } from '../apiUtils/apiConfig';
-import { API_URL } from '../../constants/constants';
 import { handleResponse } from '../apiUtils/errorHandlers';
 
 const validateTeamData = (teamData) => {

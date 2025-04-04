@@ -1,11 +1,10 @@
 import { fetchWithTimeout, getAuthHeaders } from '../apiUtils/apiConfig';
-import { API_URL } from '../../constants/constants';
 import { handleResponse } from '../apiUtils/errorHandlers';
 
 
 export const fetchStatuses = async () => {
     try {
-        const response = await fetchWithTimeout(`${API_URL}/status`, {
+        const response = await fetchWithTimeout(`/api/status`, {
             headers: getAuthHeaders()
         });
 
