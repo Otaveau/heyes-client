@@ -5,7 +5,7 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import OwnerManagement from './components/manage/OwnerManagement';
 import TeamManagement from './components/manage/TeamManagement';
-import Navigation from './components/ui/navigation';
+import Navigation from './components/common/Navigation';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Spinner from './components/ui/spinner';
 import { ToastContainer } from 'react-toastify';
