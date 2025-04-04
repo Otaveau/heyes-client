@@ -9,7 +9,8 @@ const validateTeamData = (teamData) => {
 
 export const fetchTeams = async () => {
     try {
-        const response = await fetchWithTimeout(`${API_URL}/teams`, {
+        // Utiliser directement le chemin sans API_URL
+        const response = await fetchWithTimeout('/api/teams', {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
@@ -23,7 +24,7 @@ export const getTeamById = async (id) => {
     try {
         if (!id) throw new Error('ID d\'équipe requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/teams/${id}`, {
+        const response = await fetchWithTimeout(`/api/teams/${id}`, {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
@@ -37,7 +38,7 @@ export const createTeam = async (teamData) => {
     try {
         validateTeamData(teamData);
 
-        const response = await fetchWithTimeout(`${API_URL}/teams`, {
+        const response = await fetchWithTimeout(`/api/teams`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -57,7 +58,7 @@ export const updateTeam = async (id, teamData) => {
         if (!id) throw new Error('ID d\'équipe requis');
         validateTeamData(teamData);
 
-        const response = await fetchWithTimeout(`${API_URL}/teams/${id}`, {
+        const response = await fetchWithTimeout(`/api/teams/${id}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -76,7 +77,7 @@ export const deleteTeam = async (id) => {
     try {
         if (!id) throw new Error('ID d\'équipe requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/teams/${id}`, {
+        const response = await fetchWithTimeout(`/api/teams/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });
@@ -91,7 +92,7 @@ export const getTeamOwners = async (teamId) => {
     try {
         if (!teamId) throw new Error('ID d\'équipe requis');
 
-        const response = await fetchWithTimeout(`${API_URL}/teams/${teamId}/owners`, {
+        const response = await fetchWithTimeout(`/api/teams/${teamId}/owners`, {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
