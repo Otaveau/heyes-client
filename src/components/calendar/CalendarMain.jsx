@@ -5,7 +5,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
 import { DateUtils } from '../../utils/dateUtils';
 import { getEnhancedCalendarStyles } from '../../style/calendarStyles';
-import { generateTaskColorSystem, getContrastTextColor } from '../../utils/colorUtils';
+import { generateTaskColorFromBaseColor, getContrastTextColor, adjustColor } from '../../utils/colorUtils';
+import { CalendarNavigation } from './CalendarNavigation';
 
 export const CalendarMain = ({
   calendarRef,
@@ -27,7 +28,72 @@ export const CalendarMain = ({
   const [currentView, setCurrentView] = useState('resourceTimelineYear');
   const [currentWeekNumber, setCurrentWeekNumber] = useState(1);
   const memberColorMap = useMemo(() => {
-    return generateTaskColorSystem(resources);
+    const colorMap = {};
+
+    // 1. Identifier les teams et leurs couleurs
+    const teamColorMap = {};
+
+    resources.forEach(resource => {
+      // Extraire l'ID de team (avec ou sans le préfixe "team_")
+      let teamId = resource.id;
+      let numericId = teamId;
+
+      // Si l'ID commence par "team_", extraire la partie numérique
+      if (typeof teamId === 'string' && teamId.startsWith('team_')) {
+        numericId = teamId.replace('team_', '');
+      }
+
+      // Rechercher la couleur de team (peut être dans plusieurs emplacements)
+      const teamColor = resource.extendedProps?.teamColor;
+
+      if (teamColor) {
+
+        // Stocker la couleur sous différents formats possibles
+        teamColorMap[teamId] = teamColor;
+        teamColorMap[numericId] = teamColor;
+        teamColorMap[String(numericId)] = teamColor;
+
+        // Si team a un champ teamId dans extendedProps, l'utiliser aussi
+        if (resource.extendedProps?.teamId) {
+          teamColorMap[resource.extendedProps.teamId] = teamColor;
+          teamColorMap[String(resource.extendedProps.teamId)] = teamColor;
+        }
+      }
+    });
+
+    // 2. Attribuer des couleurs aux owners en fonction de leur team
+    resources.forEach(resource => {
+      let teamId = resource.extendedProps?.teamId || resource.extendedProps?.team_id;
+
+      // Si pas trouvé et qu'il y a un parentId, l'utiliser
+      if (!teamId && resource.parentId) {
+        teamId = resource.parentId;
+
+        // Si parentId commence par "team_", extraire la partie numérique
+        if (typeof teamId === 'string' && teamId.startsWith('team_')) {
+          const numericId = teamId.replace('team_', '');
+          if (teamColorMap[numericId]) {
+            teamId = numericId;
+          }
+        }
+      }
+
+      if (!teamId) {
+        colorMap[resource.id] = '#9CA3AF'; // Couleur par défaut
+        return;
+      }
+
+      // Chercher la couleur de team
+      const teamColor = teamColorMap[teamId] || teamColorMap[String(teamId)];
+
+      if (teamColor) {
+        colorMap[resource.id] = generateTaskColorFromBaseColor(teamColor, resource.id);
+      } else {
+        colorMap[resource.id] = '#9CA3AF'; // Couleur par défaut
+      }
+    });
+
+    return colorMap;
   }, [resources]);
 
 
@@ -125,145 +191,6 @@ export const CalendarMain = ({
     }
   };
 
-
-  // Rendu des boutons de navigation personnalisés
-  const renderCustomNavigation = () => {
-    return (
-      <div className="fc-custom-nav-container">
-        <div className="fc-nav-row">
-          {/* Navigation par année - Gauche */}
-          <div className="fc-year-nav">
-            <button
-              type="button"
-              className="fc-button fc-button-primary fc-prev-year-button"
-              onClick={goToPreviousYear}
-              title="Année précédente"
-            >
-              &laquo;
-            </button>
-            <span className="fc-year-display">{selectedYear}</span>
-            <button
-              type="button"
-              className="fc-button fc-button-primary fc-next-year-button"
-              onClick={goToNextYear}
-              title="Année suivante"
-            >
-              &raquo;
-            </button>
-            <button
-              type="button"
-              className="fc-button fc-button-primary fc-today-button"
-              onClick={handleTodayClick}
-              title="Aujourd'hui"
-            >
-              Aujourd'hui
-            </button>
-          </div>
-
-          {/* Centre - Mois (visible dans toutes les vues) */}
-          <div className="fc-months-nav">
-            {months.map((month, index) => (
-              <button
-                key={index}
-                type="button"
-                className="fc-button fc-button-primary fc-month-button"
-                onClick={() => navigateToMonth(index)}
-              >
-                <span className="month-full">{month}</span>
-                <span className="month-abbr">{month.substring(0, 3)}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Boutons de navigation de semaine - Visible uniquement en vue semaine */}
-          {currentView === 'resourceTimelineWeek' && (
-            <>
-              <button
-                type="button"
-                className="fc-button fc-button-primary fc-prev-week-button"
-                onClick={() => {
-                  goToPreviousWeek();
-
-                  // Mettre à jour le numéro de semaine après navigation
-                  setTimeout(() => {
-                    if (calendarRef.current) {
-                      const api = calendarRef.current.getApi();
-                      const currentDate = api.getDate();
-                      setCurrentWeekNumber(getWeekNumber(currentDate));
-                    }
-                  }, 100);
-                }}
-                title="Semaine précédente"
-              >
-                &lt;
-              </button>
-
-              {/* Affichage du numéro de semaine */}
-              <span className="fc-week-display">Semaine {currentWeekNumber}</span>
-
-              <button
-                type="button"
-                className="fc-button fc-button-primary fc-next-week-button"
-                onClick={() => {
-                  goToNextWeek();
-
-                  // Mettre à jour le numéro de semaine après navigation
-                  setTimeout(() => {
-                    if (calendarRef.current) {
-                      const api = calendarRef.current.getApi();
-                      const currentDate = api.getDate();
-                      setCurrentWeekNumber(getWeekNumber(currentDate));
-                    }
-                  }, 100);
-                }}
-                title="Semaine suivante"
-              >
-                &gt;
-              </button>
-            </>
-          )}
-
-          {/* Droite - Boutons de vue du calendrier */}
-          <div className="fc-view-buttons">
-            <button
-              type="button"
-              className={`fc-button fc-button-primary ${currentView === 'resourceTimelineYear' ? 'fc-button-active' : ''}`}
-              onClick={() => {
-                if (calendarRef.current) {
-                  calendarRef.current.getApi().changeView('resourceTimelineYear');
-                }
-              }}
-            >
-              Année
-            </button>
-            <button
-              type="button"
-              className={`fc-button fc-button-primary ${currentView === 'resourceTimelineMonth' ? 'fc-button-active' : ''}`}
-              onClick={() => {
-                if (calendarRef.current) {
-                  calendarRef.current.getApi().changeView('resourceTimelineMonth');
-                }
-              }}
-            >
-              Mois
-            </button>
-            <button
-              type="button"
-              className={`fc-button fc-button-primary ${currentView === 'resourceTimelineWeek' ? 'fc-button-active' : ''}`}
-              onClick={() => {
-                if (calendarRef.current) {
-                  calendarRef.current.getApi().changeView('resourceTimelineWeek');
-                }
-              }}
-            >
-              Semaine
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   // Gestionnaire personnalisé pour eventDrop pour gérer la conversion des dates exclusives
   const handleEventDrop = (info) => {
     const { event } = info;
@@ -329,7 +256,19 @@ export const CalendarMain = ({
 
   return (
     <div className="calendar-container ml-4">
-      {renderCustomNavigation()}
+      <CalendarNavigation
+        selectedYear={selectedYear}
+        currentView={currentView}
+        currentWeekNumber={currentWeekNumber}
+        months={months}
+        calendarRef={calendarRef}
+        goToPreviousYear={goToPreviousYear}
+        goToNextYear={goToNextYear}
+        goToPreviousWeek={goToPreviousWeek}
+        goToNextWeek={goToNextWeek}
+        navigateToMonth={navigateToMonth}
+        handleTodayClick={handleTodayClick}
+      />
       <FullCalendar
         ref={calendarRef}
         locale={frLocale}
@@ -358,6 +297,7 @@ export const CalendarMain = ({
         selectMirror={true}
         droppable={true}
         resourceAreaWidth="15%"
+        resourceAreaHeaderContent=""
         slotDuration={{ days: 1 }}
         selectConstraint={{
           start: '00:00',
@@ -384,6 +324,11 @@ export const CalendarMain = ({
             info.el.style.borderBottom = '1px solid #d1d5db';
             info.el.style.color = '#1f2937';
             info.el.style.fontSize = '0.95rem';
+            // Si la ressource est une team et a une couleur, appliquer un indicateur visuel
+            if (info.resource.extendedProps?.color) {
+              const teamColor = info.resource.extendedProps.color;
+              info.el.style.borderLeft = `4px solid ${teamColor}`;
+            }
           } else {
             info.el.style.paddingLeft = '20px';
             info.el.style.borderBottom = '1px solid #e5e7eb';
@@ -395,6 +340,13 @@ export const CalendarMain = ({
           if (info.resource.extendedProps?.isTeam) {
             info.el.style.backgroundColor = '#f3f4f6';
             info.el.style.cursor = 'not-allowed';
+          }
+          // Si la ressource est une team et a une couleur, appliquer un indicateur visuel subtil
+          if (info.resource.extendedProps?.color) {
+            const teamColor = info.resource.extendedProps.color;
+            // Créer une couleur plus légère pour le fond
+            const lightTeamColor = `${teamColor}10`; // 10% d'opacité
+            info.el.style.backgroundColor = lightTeamColor;
           }
         }}
 
@@ -462,7 +414,7 @@ export const CalendarMain = ({
           // Obtenir la ressource (owner) associée à cet événement
           const resourceId = event.getResources()[0]?.id;
 
-          const isConge =  event.title?.toLowerCase().includes('conge');
+          const isConge = event.title?.toLowerCase().includes('conge');
 
           // Définir une couleur par défaut
           let backgroundColor = '';
@@ -473,24 +425,57 @@ export const CalendarMain = ({
             if (arg.view.type.includes('resourceTimeline')) {
               return {
                 html: `
-                  <div class="fc-event-main-custom" 
-                       style="position: relative;
+                  <div class="fc-event-main-custom conge-event" 
+                      style="position: relative;
                               height: 100%;
-                              padding: 2px 4px; 
-                              border-radius: 3px;
-                              overflow: hidden; 
+                              padding: 3px 6px; 
+                              border-radius: 4px;
+                              box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                              overflow: visible;
                               text-overflow: ellipsis; 
                               white-space: nowrap;
                               background: repeating-linear-gradient(
                                 45deg,
-                              #c6cbd4,
-                              #c6cbd4 2px,
-                              #FFFFFF 2px,
-                              #FFFFFF 4px
+                              #e5e7eb,
+                              #e5e7eb 4px,
+                              #f3f4f6 4px,
+                              #f3f4f6 8px
                               );
-                              color: ${textColor};
-                              font-weight: bold;">
-                    ${event.title}
+                               border-left: 3px solid #9ca3af;
+                              color: #4b5563;
+                              font-weight: 600;">
+                      <!-- Conteneur pour le titre visible lors du défilement -->
+                      <div style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: 2;
+                        pointer-events: none;
+                        display: flex;
+                        align-items: center;
+                      ">
+                      <div style="
+                        display: flex; 
+                        align-items: center;
+                        position: sticky;
+                        left: 6px;
+                        background-color: transparent;
+                        max-width: calc(100% - 12px);
+                      ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px; flex-shrink: 0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${event.title}</span>
+                      </div>
+                    </div>
+                    
+                    <!-- Contenu original (rendu invisible pour éviter la duplication visuelle) -->
+                    <div style="visibility: hidden;">
+                      <div style="display: flex; align-items: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        ${event.title}
+                      </div>
+                    </div>
                   </div>
                 `
               };
@@ -502,25 +487,84 @@ export const CalendarMain = ({
           if (resourceId !== null && memberColorMap[resourceId]) {
             backgroundColor = memberColorMap[resourceId];
           }
+
+          // Créer une couleur légèrement plus foncée pour la bordure
+          const darkerColor = adjustColor(backgroundColor, -15);
           // Déterminer la couleur du texte pour un bon contraste
           const textColor = getContrastTextColor(backgroundColor);
 
           // Appliquer le style uniquement pour les vues timeline
           if (arg.view.type.includes('resourceTimeline')) {
+            // Calculer la durée de l'événement en jours
+            const startDate = new Date(event.start);
+            const endDate = event.end ? new Date(event.end) : new Date(startDate);
+            const durationInDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+            // Créer un dégradé léger pour donner de la profondeur à la tâche
+            const gradientBg = `linear-gradient(to bottom, ${adjustColor(backgroundColor, 5)}, ${backgroundColor})`;
+
+            // Utiliser une classe pour les tâches longues vs courtes
+            const taskSizeClass = durationInDays > 5 ? 'long-task' : 'short-task';
+
+            // Style du titre amélioré sans encadrement
+            const titleHtml = `
+              <div class="task-title-container" style="
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 2;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+              ">
+                <span class="task-title" style="
+                  font-weight: 600;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-width: 90%;
+                  pointer-events: none;
+                  position: sticky;
+                  left: 6px;
+                  padding: 2px 4px;
+                  background-color: ${adjustColor(backgroundColor, 0, 0.9)}; /* Semi-transparent background */
+                  backdrop-filter: blur(2px);
+                  border-radius: 3px;
+                  box-shadow: 0 0 4px rgba(0,0,0,0.1);
+                ">${event.title}</span>
+              </div>
+            `;
             return {
               html: `
-        <div class="fc-event-main-custom" 
-             style="background-color:${backgroundColor}; 
-                    color:${textColor}; 
-                    padding:2px 4px; 
-                    border-radius:3px; 
-                    height:100%;
-                    overflow:hidden; 
-                    text-overflow:ellipsis; 
-                    white-space:nowrap;">
-          ${event.title}
-        </div>
-      `
+       <div class="fc-event-main-custom ${taskSizeClass}" 
+                  style="background: ${gradientBg}; 
+                  color: ${textColor}; 
+                  padding: 3px 6px; 
+                  border-radius: 4px; 
+                  height: 100%;
+                  position: relative;
+                  overflow: visible; /* Changé de hidden à visible */
+                  border-left: 3px solid ${darkerColor};
+                  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                  ">${titleHtml}
+                  <span class="task-title-duplicate" 
+                    style="
+                    visibility: visible;
+                    opacity: 0.4;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: inline-block;
+                    max-width: 95%;
+                  ">${event.title}</span>
+                </div>
+              `
             };
           }
 
