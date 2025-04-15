@@ -5,7 +5,7 @@ import {
 } from '../utils/dndUtils';
 
 
-export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
+export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
     // Références pour les effets visuels
     const ghostElementRef = useRef(null);
     const dropTimeoutRef = useRef(null);
@@ -87,16 +87,7 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
         dropZoneRefs.current.forEach((ref, index) => {
           if (!ref?.current) return;
           
-          // Vérifier si cette dropZone est le taskboard 2
-          const isTaskboard2 = dropZones[index]?.statusId === '2';
           
-          // Ne pas mettre en surbrillance le taskboard 2
-          if (isTaskboard2) {
-            ref.current.classList.remove('dropzone-active');
-            ref.current.classList.add('dropzone-disabled');
-            return;
-          }
-  
           const dropZoneEl = ref.current;
           const rect = dropZoneEl.getBoundingClientRect();
   
@@ -121,7 +112,7 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
       } else if (taskBoardContainer) {
         taskBoardContainer.classList.remove('taskboard-highlight-intense');
       }
-    }, [dropZoneRefs, dropZones]);
+    }, [dropZoneRefs]);
   
     // Créer l'élément fantôme pour le glisser-déposer
     const createGhostElement = useCallback((info) => {
