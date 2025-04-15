@@ -61,6 +61,17 @@ export const useCalendarEventHandlers = (
   // Déplacement d'un événement dans le calendrier
   const handleEventDrop = useCallback(async (dropInfo) => {
     const { event } = dropInfo;
+    
+    // Vérifier si la destination est le taskboard 2
+    const statusId = event._def.extendedProps.statusId || '';
+    
+    // Si la destination est le taskboard 2, annuler le déplacement
+    if (statusId === '2') {
+      dropInfo.revert();
+      toast.warning('Déplacement direct vers ce statut non autorisé', TOAST_CONFIG);
+      return;
+    }
+    
     const startDate = event.start;
     const endDate = event.end || new Date(startDate.getTime() + 86400000);
     const exclusiveEndDate = endDate;
@@ -83,6 +94,16 @@ export const useCalendarEventHandlers = (
       return;
     }
 
+    // Vérifier si la tâche est déplacée vers le taskboard 2
+    // Cas particulier: si la tâche est déplacée depuis un autre statut vers le taskboard 2
+    const targetStatusId = event._def.extendedProps.statusId || existingTask.extendedProps?.statusId;
+    if (targetStatusId === '2') {
+      console.log('Tentative de déplacement vers taskboard 2 détectée');
+      dropInfo.revert();
+      toast.warning('Déplacement direct vers ce statut non autorisé', TOAST_CONFIG);
+      return;
+    }
+
     const resourceId = event._def.resourceIds[0];
 
     // Préparer les mises à jour avec les deux formats de dates
@@ -92,9 +113,9 @@ export const useCalendarEventHandlers = (
       end: endDate,   // Date de fin exclusive pour FullCalendar
       exclusiveEndDate: exclusiveEndDate, // Explicitement stocker la date exclusive
       resourceId,
-      statusId: event._def.extendedProps.statusId || existingTask.extendedProps?.statusId,
+      statusId: targetStatusId,
       extendedProps: {
-        statusId: event._def.extendedProps.statusId || existingTask.extendedProps?.statusId,
+        statusId: targetStatusId,
         inclusiveEndDate: inclusiveEndDate // Stocker la date inclusive dans les propriétés étendues
       }
     };

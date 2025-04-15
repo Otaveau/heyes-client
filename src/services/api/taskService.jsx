@@ -148,7 +148,7 @@ const validateTaskData = (taskData) => {
 
 export const fetchTasks = async () => {
     try {
-        const response = await fetchWithTimeout(`/api/tasks`, {
+        const response = await fetchWithTimeout('/api/tasks', {
             headers: getAuthHeaders()
         });
 
@@ -166,7 +166,7 @@ export const createTask = async (taskData) => {
         validateTaskData(taskData);
         const dataToServer = transformTaskForServer(taskData);
 
-        const response = await fetchWithTimeout(`/api/tasks`, {
+        const response = await fetchWithTimeout('/api/tasks', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(dataToServer)

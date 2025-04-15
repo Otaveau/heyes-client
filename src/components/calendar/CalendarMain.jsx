@@ -27,6 +27,8 @@ export const CalendarMain = ({
 
   const [currentView, setCurrentView] = useState('resourceTimelineYear');
   const [currentWeekNumber, setCurrentWeekNumber] = useState(1);
+
+  // Générer la map des couleurs basée sur les teams des owners
   const memberColorMap = useMemo(() => {
     const colorMap = {};
 
@@ -297,7 +299,6 @@ export const CalendarMain = ({
         selectMirror={true}
         droppable={true}
         resourceAreaWidth="15%"
-        resourceAreaHeaderContent=""
         slotDuration={{ days: 1 }}
         selectConstraint={{
           start: '00:00',
@@ -306,6 +307,7 @@ export const CalendarMain = ({
         weekends={true}
         resourceOrder="title"
         resourcesInitiallyExpanded={true}
+        resourceAreaHeaderContent=""
         viewDidMount={internalHandleViewChange}
         datesSet={(info) => {
           // Appeler le gestionnaire existant
@@ -316,7 +318,6 @@ export const CalendarMain = ({
             setCurrentWeekNumber(getWeekNumber(info.view.currentStart));
           }
         }}
-
         resourceLabelDidMount={(info) => {
           if (info.resource.extendedProps?.isTeam) {
             info.el.style.fontWeight = 'bold';
@@ -324,6 +325,7 @@ export const CalendarMain = ({
             info.el.style.borderBottom = '1px solid #d1d5db';
             info.el.style.color = '#1f2937';
             info.el.style.fontSize = '0.95rem';
+
             // Si la ressource est une team et a une couleur, appliquer un indicateur visuel
             if (info.resource.extendedProps?.color) {
               const teamColor = info.resource.extendedProps.color;
@@ -335,21 +337,20 @@ export const CalendarMain = ({
             info.el.style.color = '#4b5563';
           }
         }}
-
         resourceLaneDidMount={(info) => {
           if (info.resource.extendedProps?.isTeam) {
             info.el.style.backgroundColor = '#f3f4f6';
             info.el.style.cursor = 'not-allowed';
-          }
-          // Si la ressource est une team et a une couleur, appliquer un indicateur visuel subtil
-          if (info.resource.extendedProps?.color) {
-            const teamColor = info.resource.extendedProps.color;
-            // Créer une couleur plus légère pour le fond
-            const lightTeamColor = `${teamColor}10`; // 10% d'opacité
-            info.el.style.backgroundColor = lightTeamColor;
+
+            // Si la ressource est une team et a une couleur, appliquer un indicateur visuel subtil
+            if (info.resource.extendedProps?.color) {
+              const teamColor = info.resource.extendedProps.color;
+              // Créer une couleur plus légère pour le fond
+              const lightTeamColor = `${teamColor}10`; // 10% d'opacité
+              info.el.style.backgroundColor = lightTeamColor;
+            }
           }
         }}
-
         eventAllow={(dropInfo, draggedEvent) => {
           const resourceId = dropInfo.resource ? dropInfo.resource.id : null;
           const resource = resourceId ?
@@ -370,7 +371,6 @@ export const CalendarMain = ({
 
           return true;
         }}
-
         // Gestionnaires de classes pour les jours fériés et week-ends
         slotLabelClassNames={(arg) => {
           if (!arg?.date) return [];
@@ -381,19 +381,16 @@ export const CalendarMain = ({
           }
           return classes;
         }}
-
         slotLaneClassNames={(arg) => {
           if (!arg?.date) return '';
           // Utiliser weekend-column pour tous les jours non ouvrés
           return DateUtils.isHolidayOrWeekend(arg.date, holidays) ? 'weekend-column' : '';
         }}
-
         dayHeaderClassNames={(arg) => {
           if (!arg?.date) return '';
           // Utiliser weekend-header pour tous les jours non ouvrés
           return DateUtils.isHolidayOrWeekend(arg.date, holidays) ? 'weekend-header' : '';
         }}
-
         dayCellClassNames={(arg) => {
           if (!arg?.date) return [];
           const classes = [];
@@ -408,6 +405,7 @@ export const CalendarMain = ({
           return classes;
         }}
 
+        // Dans votre composant CalendarMain.jsx, modifiez uniquement la fonction eventContent:
         eventContent={(arg) => {
           const { event } = arg;
 
@@ -418,10 +416,9 @@ export const CalendarMain = ({
 
           // Définir une couleur par défaut
           let backgroundColor = '';
-          
+
           if (isConge) {
-            const textColor = "#5f666a";
-            
+            // Style amélioré pour les congés
             if (arg.view.type.includes('resourceTimeline')) {
               return {
                 html: `
@@ -431,17 +428,17 @@ export const CalendarMain = ({
                               padding: 3px 6px; 
                               border-radius: 4px;
                               box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                              overflow: visible;
+                              overflow: visible; /* Changé de hidden à visible pour permettre au titre de dépasser */
                               text-overflow: ellipsis; 
                               white-space: nowrap;
                               background: repeating-linear-gradient(
                                 45deg,
-                              #e5e7eb,
-                              #e5e7eb 4px,
-                              #f3f4f6 4px,
-                              #f3f4f6 8px
+                                #e5e7eb,
+                                #e5e7eb 4px,
+                                #f3f4f6 4px,
+                                #f3f4f6 8px
                               );
-                               border-left: 3px solid #9ca3af;
+                              border-left: 3px solid #9ca3af;
                               color: #4b5563;
                               font-weight: 600;">
                       <!-- Conteneur pour le titre visible lors du défilement -->
@@ -481,15 +478,18 @@ export const CalendarMain = ({
               };
             }
             return null;
-          }// Gris par défaut
+          }
 
           // Si nous avons une ressource et une couleur associée, l'utiliser
           if (resourceId !== null && memberColorMap[resourceId]) {
             backgroundColor = memberColorMap[resourceId];
+          } else {
+            backgroundColor = '#9ca3af'; // Couleur par défaut
           }
 
           // Créer une couleur légèrement plus foncée pour la bordure
           const darkerColor = adjustColor(backgroundColor, -15);
+
           // Déterminer la couleur du texte pour un bon contraste
           const textColor = getContrastTextColor(backgroundColor);
 
@@ -536,9 +536,10 @@ export const CalendarMain = ({
                 ">${event.title}</span>
               </div>
             `;
+
             return {
               html: `
-       <div class="fc-event-main-custom ${taskSizeClass}" 
+                <div class="fc-event-main-custom ${taskSizeClass}" 
                   style="background: ${gradientBg}; 
                   color: ${textColor}; 
                   padding: 3px 6px; 
@@ -567,11 +568,9 @@ export const CalendarMain = ({
               `
             };
           }
-
-          // Pour les autres types de vues, utiliser le rendu par défaut
+          
           return null;
         }}
-
         // Gestionnaires d'événements
         eventDragStart={taskHandlers.handleEventDragStart}
         eventDrop={handleEventDrop}

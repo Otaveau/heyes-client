@@ -186,7 +186,7 @@ export const TaskBoard = ({
       <div className="bg-white">
         <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Taskboard</h2>
-
+          
           {/* Bouton de création de tâche */}
           {onCreateTask && (
             <Button 
@@ -198,13 +198,14 @@ export const TaskBoard = ({
             </Button>
           )}
         </div>
-
+        
         <div className="flex w-full space-x-4 backlogs taskboard-container">
           {dropZones.map((zone, index) => {
             // S'assurer que les refs sont initialisées
             if (!effectiveRefs.current[index]) {
               effectiveRefs.current[index] = React.createRef();
             }
+
             const zoneTasks = externalTasks.filter(task => {
               // Stratégie de récupération du statusId
               const extractStatusId = () => {
@@ -233,50 +234,51 @@ export const TaskBoard = ({
               if (isConge) {
                 return false;
               }
-              return taskStatusId === zone.statusId.toString();
+
+              return taskStatusId === zone.statusId;
             });
 
-          const isInProgressZone = zone.statusId === '2';
+            const isInProgressZone = zone.statusId === '2';
 
-          return (
-            <div
-              key={zone.id}
-              ref={effectiveRefs.current[index]}
-              className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
-              data-status-id={zone.statusId}
-              data-zone-id={zone.id}
-              data-dropzone-id={zone.id}
-            >
-              <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
-                {zone.title}
-              </h3>
-              {zoneTasks.map(task => {
-                // Vérifier si c'est un congé
-                const isConge =
-                  task.isConge === true ||
-                  task.extendedProps?.isConge === true ||
-                  task.title === 'CONGE';
+            return (
+              <div
+                key={zone.id}
+                ref={effectiveRefs.current[index]}
+                className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
+                data-status-id={zone.statusId}
+                data-zone-id={zone.id}
+                data-dropzone-id={zone.id}
+              >
+                <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
+                  {zone.title}
+                </h3>
+                {zoneTasks.map(task => {
+                  // Vérifier si c'est un congé
+                  const isConge =
+                    task.isConge === true ||
+                    task.extendedProps?.isConge === true ||
+                    task.title === 'CONGE';
 
-                return (
-                  <div
-                    key={task.id}
-                    data-task-id={task.id}
-                    className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white border rounded hover:bg-gray-50 relative`}
-                    data-is-conge={isConge ? 'true' : 'false'}
-                    onClick={() => handleExternalTaskClick && handleExternalTaskClick(task)}
-                  >
-                    {/* Titre affiché pour toutes les tâches */}
-                    <div className="font-medium">{task.title}</div>
+                  return (
+                    <div
+                      key={task.id}
+                      data-task-id={task.id}
+                      className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white border rounded hover:bg-gray-50 relative`}
+                      data-is-conge={isConge ? 'true' : 'false'}
+                      onClick={() => handleExternalTaskClick && handleExternalTaskClick(task)}
+                    >
+                      {/* Titre affiché pour toutes les tâches */}
+                      <div className="font-medium">{task.title}</div>
 
-                    {/* Description affichée pour toutes les tâches si elle existe */}
-                    {(task.description || task.extendedProps?.description) && (
-                      <div className="text-xs text-gray-500 mt-1 line-clamp-2">
-                        {task.description || task.extendedProps?.description}
-                      </div>
-                    )}
+                      {/* Description affichée pour toutes les tâches si elle existe */}
+                      {(task.description || task.extendedProps?.description) && (
+                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {task.description || task.extendedProps?.description}
+                        </div>
+                      )}
 
-                    {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
-                    {isInProgressZone && (
+                      {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
+                      {isInProgressZone && (
                         <>
                           {task.resourceId && (
                             <div className="text-xs text-blue-600 mt-1">
@@ -290,10 +292,10 @@ export const TaskBoard = ({
                             <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
                           </div>
                         </>
-                    )}  
+                      )}
 
-                    {/* Barre d'actions avec boutons de déplacement et suppression */}
-                    <div className="flex justify-end mt-2 space-x-2">
+                      {/* Barre d'actions avec boutons de déplacement et suppression */}
+                      <div className="flex justify-end mt-2 space-x-2">
                         {/* Flèche gauche - visible sauf pour le premier taskboard */}
                         {index > 0 && (
                           <button
@@ -305,17 +307,17 @@ export const TaskBoard = ({
                           </button>
                         )}
 
-                      {/* Bouton de suppression */}
-                      <button
-                        className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
-                        onClick={(e) => openDeleteModal(e, task)}
-                        title="Supprimer la tâche"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                        {/* Bouton de suppression */}
+                        <button
+                          className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
+                          onClick={(e) => openDeleteModal(e, task)}
+                          title="Supprimer la tâche"
+                        >
+                          <Trash2 size={16} />
+                        </button>
 
-                       {/* Flèche droite - visible sauf pour le dernier taskboard */}
-                       {index < dropZones.length - 1 && (
+                        {/* Flèche droite - visible sauf pour le dernier taskboard */}
+                        {index < dropZones.length - 1 && (
                           <button
                             className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
                             onClick={(e) => moveTaskRight(e, task)}
@@ -326,21 +328,20 @@ export const TaskBoard = ({
                         )}
                       </div>
                     </div>
-
-                );
-              })}
-              {zoneTasks.length === 0 && (
-                <div className="text-gray-400 text-center p-2">
-                  Pas de tâches
-                </div>
+                  );
+                })}
+                {zoneTasks.length === 0 && (
+                  <div className="text-gray-400 text-center p-2">
+                    Pas de tâches
+                  </div>
                 )}
-                </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
-  
-        {/* Modal de confirmation de suppression */}
+      </div>
+
+      {/* Modal de confirmation de suppression */}
       {deleteModalOpen && taskToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">

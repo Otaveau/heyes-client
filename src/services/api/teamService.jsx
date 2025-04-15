@@ -37,12 +37,12 @@ export const createTeam = async (teamData) => {
     try {
         validateTeamData(teamData);
 
-        const response = await fetchWithTimeout(`/api/teams`, {
+        const response = await fetchWithTimeout('/api/teams', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({
                 name: teamData.name.trim(),
-                description: teamData.description?.trim() || ''
+                color: teamData.color
             })
         });
         return handleResponse(response);
@@ -62,7 +62,7 @@ export const updateTeam = async (id, teamData) => {
             headers: getAuthHeaders(),
             body: JSON.stringify({
                 name: teamData.name.trim(),
-                description: teamData.description?.trim() || ''
+                color: teamData.color
             })
         });
         return handleResponse(response);
@@ -83,20 +83,6 @@ export const deleteTeam = async (id) => {
         return handleResponse(response);
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'équipe:', error);
-        throw error;
-    }
-};
-
-export const getTeamOwners = async (teamId) => {
-    try {
-        if (!teamId) throw new Error('ID d\'équipe requis');
-
-        const response = await fetchWithTimeout(`/api/teams/${teamId}/owners`, {
-            headers: getAuthHeaders()
-        });
-        return handleResponse(response);
-    } catch (error) {
-        console.error('Erreur lors de la récupération des membres de l\'équipe:', error);
         throw error;
     }
 };
