@@ -49,6 +49,19 @@ export const CalendarView = () => {
     }));
   };
 
+  // Fonction pour ouvrir le formulaire de création de tâche
+  const handleCreateTask = () => {
+    setCalendarState(prev => ({
+      ...prev,
+      isFormOpen: true,
+      selectedTask: null,
+      selectedDates: {
+        start: new Date(),
+        end: new Date()
+      }
+    }));
+  };
+
   // Gérer le déplacement des tâches entre les taskboards
   const handleMoveTask = (taskId, newStatusId) => {
     // Trouver la tâche à déplacer
@@ -323,6 +336,7 @@ export const CalendarView = () => {
           onDeleteTask={taskHandlers.handleDeleteTask}
           resources={resources}
           onMoveTask={handleMoveTask}
+          onCreateTask={handleCreateTask}
         />
       </div>
 
@@ -335,6 +349,7 @@ export const CalendarView = () => {
         statuses={statuses}
         onSubmit={handleFormSubmit}
         isProcessing={calendarState.isProcessing}
+        onDeleteTask={taskHandlers.handleDeleteTask}
       />
     </div>
   );

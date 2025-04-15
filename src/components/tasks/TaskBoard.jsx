@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
 import { DateUtils } from '../../utils/dateUtils';
+import { Button } from '../ui/button';
 
 export const TaskBoard = ({
   dropZones = [],
@@ -10,7 +11,8 @@ export const TaskBoard = ({
   handleExternalTaskClick,
   onDeleteTask,
   resources = [],
-  onMoveTask
+  onMoveTask,
+  onCreateTask
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
@@ -181,42 +183,58 @@ export const TaskBoard = ({
 
   return (
     <>
-      <div className="flex w-full space-x-4 backlogs taskboard-container">
-        {dropZones.map((zone, index) => {
-          // S'assurer que les refs sont initialisées
-          if (!effectiveRefs.current[index]) {
-            effectiveRefs.current[index] = React.createRef();
-          }
+      <div className="bg-white">
+        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Taskboard</h2>
 
-          const zoneTasks = externalTasks.filter(task => {
+          {/* Bouton de création de tâche */}
+          {onCreateTask && (
+            <Button 
+              onClick={onCreateTask}
+              className="bg-gradient-to-b from-white to-gray-200 text-gray-800 font-bold py-2.5 px-5 rounded-lg shadow-lg flex items-center transition-all duration-200 transform hover:scale-105 border border-gray-300 hover:shadow-xl"
+            >
+              <Plus className="h-6 w-6 mr-2 text-gray-700" />
+              Nouvelle tâche
+            </Button>
+          )}
+        </div>
 
-            // Stratégie de récupération du statusId
-            const extractStatusId = () => {
-              // Vérifier dans différentes sources possibles
-              if (task.statusId) return task.statusId.toString();
-              if (task.extendedProps?.statusId) return task.extendedProps.statusId.toString();
-              if (task.status) return task.status.toString();
-
-              // Valeur par défaut si aucun statusId trouvé
-              return null;
-            };
-
-            const taskStatusId = extractStatusId();
-
-            // Vérifier si c'est un congé 
-            const isConge =
-              task.isConge === true ||
-              task.extendedProps?.isConge === true ||
-              task.title === 'CONGE';
-
-            // Si c'est un congé et que le tableau courant est "En cours" (statusId === '2'),
-            // alors ne pas inclure cette tâche
-            if (isConge) {
-              return false;
+        <div className="flex w-full space-x-4 backlogs taskboard-container">
+          {dropZones.map((zone, index) => {
+            // S'assurer que les refs sont initialisées
+            if (!effectiveRefs.current[index]) {
+              effectiveRefs.current[index] = React.createRef();
             }
+            const zoneTasks = externalTasks.filter(task => {
+              // Stratégie de récupération du statusId
+              const extractStatusId = () => {
+                // Vérifier dans différentes sources possibles
+                if (task.statusId) return task.statusId.toString();
+                if (task.extendedProps?.statusId) return task.extendedProps.statusId.toString();
+                if (task.status) return task.status.toString();
 
-            return taskStatusId === zone.statusId;
-          });
+                // Valeur par défaut si aucun statusId trouvé
+                return null;
+              };
+
+              const taskStatusId = extractStatusId();
+
+              // Debug pour voir les statusId des tâches et des zones
+              console.log(`Task ${task.id} statusId: ${taskStatusId}, Zone statusId: ${zone.statusId}`);
+
+              // Vérifier si c'est un congé 
+              const isConge =
+                task.isConge === true ||
+                task.extendedProps?.isConge === true ||
+                task.title === 'CONGE';
+
+              // Si c'est un congé et que le tableau courant est "En cours" (statusId === '2'),
+              // alors ne pas inclure cette tâche
+              if (isConge) {
+                return false;
+              }
+              return taskStatusId === zone.statusId.toString();
+            });
 
           const isInProgressZone = zone.statusId === '2';
 
@@ -224,16 +242,15 @@ export const TaskBoard = ({
             <div
               key={zone.id}
               ref={effectiveRefs.current[index]}
-              className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
+              className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
               data-status-id={zone.statusId}
               data-zone-id={zone.id}
               data-dropzone-id={zone.id}
             >
               <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
-                {zone.title} {isInProgressZone}
+                {zone.title}
               </h3>
               {zoneTasks.map(task => {
-
                 // Vérifier si c'est un congé
                 const isConge =
                   task.isConge === true ||
@@ -260,33 +277,33 @@ export const TaskBoard = ({
 
                     {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
                     {isInProgressZone && (
-                      <>
-                        {task.resourceId && (
-                          <div className="text-xs text-blue-600 mt-1">
-                            <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
-                          </div>
-                        )}
+                        <>
+                          {task.resourceId && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
+                            </div>
+                          )}
 
-                        {/* Dates de la tâche */}
-                        <div className="text-xs text-gray-600 mt-1">
-                          <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
-                          <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
-                        </div>
-                      </>
-                    )}
+                          {/* Dates de la tâche */}
+                          <div className="text-xs text-gray-600 mt-1">
+                            <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
+                            <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
+                          </div>
+                        </>
+                    )}  
 
                     {/* Barre d'actions avec boutons de déplacement et suppression */}
                     <div className="flex justify-end mt-2 space-x-2">
-                      {/* Flèche gauche - visible sauf pour le premier taskboard */}
-                      {index > 0 && (
-                        <button
-                          className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
-                          onClick={(e) => moveTaskLeft(e, task)}
-                          title="Déplacer vers la gauche"
-                        >
-                          <ArrowLeft size={16} />
-                        </button>
-                      )}
+                        {/* Flèche gauche - visible sauf pour le premier taskboard */}
+                        {index > 0 && (
+                          <button
+                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            onClick={(e) => moveTaskLeft(e, task)}
+                            title="Déplacer vers la gauche"
+                          >
+                            <ArrowLeft size={16} />
+                          </button>
+                        )}
 
                       {/* Bouton de suppression */}
                       <button
@@ -297,21 +314,18 @@ export const TaskBoard = ({
                         <Trash2 size={16} />
                       </button>
 
-                      {/* Flèche droite - visible sauf pour le dernier taskboard */}
-                      {index < dropZones.length - 1 && (
-                        <button
-                          className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
-                          onClick={(e) => moveTaskRight(e, task)}
-                          title="Déplacer vers la droite"
-                        >
-                          <ArrowRight size={16} />
-                        </button>
-                      )}
-
+                       {/* Flèche droite - visible sauf pour le dernier taskboard */}
+                       {index < dropZones.length - 1 && (
+                          <button
+                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            onClick={(e) => moveTaskRight(e, task)}
+                            title="Déplacer vers la droite"
+                          >
+                            <ArrowRight size={16} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-
-
-                  </div>
 
                 );
               })}
@@ -319,13 +333,14 @@ export const TaskBoard = ({
                 <div className="text-gray-400 text-center p-2">
                   Pas de tâches
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Modal de confirmation de suppression */}
+                )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+  
+        {/* Modal de confirmation de suppression */}
       {deleteModalOpen && taskToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
