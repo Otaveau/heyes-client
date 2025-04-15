@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
-// Importez la fonction login du service auth
 import { login } from '../../services/api/authService';
 
 const Login = () => {
