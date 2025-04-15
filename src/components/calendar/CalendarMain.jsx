@@ -193,68 +193,6 @@ export const CalendarMain = ({
     }
   };
 
-  // Gestionnaire personnalisé pour eventDrop pour gérer la conversion des dates exclusives
-  const handleEventDrop = (info) => {
-    const { event } = info;
-
-    // Récupérer les dates start et end (end est exclusive dans FullCalendar)
-    const end = event.end;
-
-    // Créer une copie inclusive de la date de fin (soustraire un jour)
-    const inclusiveEndDate = end ? new Date(end) : null;
-    if (inclusiveEndDate) {
-      inclusiveEndDate.setDate(inclusiveEndDate.getDate() - 1);
-    }
-
-    // Enrichir les données de l'événement avec les dates inclusives/exclusives
-    const extendedEvent = {
-      ...event.toPlainObject(),
-      extendedProps: {
-        ...event.extendedProps,
-        inclusiveEndDate: inclusiveEndDate // Stocker la date inclusive
-      }
-    };
-
-    // Appeler le gestionnaire d'événement original avec les données enrichies
-    if (taskHandlers.handleEventDrop) {
-      taskHandlers.handleEventDrop({
-        ...info,
-        enrichedEvent: extendedEvent
-      });
-    }
-  };
-
-  // Gestionnaire personnalisé pour eventResize
-  const handleEventResize = (info) => {
-    const { event } = info;
-
-    // Récupérer les dates start et end (end est exclusive dans FullCalendar)
-    const end = event.end;
-
-    // Créer une copie inclusive de la date de fin (soustraire un jour)
-    const inclusiveEndDate = end ? new Date(end) : null;
-    if (inclusiveEndDate) {
-      inclusiveEndDate.setDate(inclusiveEndDate.getDate() - 1);
-    }
-
-    // Enrichir les données de l'événement avec les dates inclusives/exclusives
-    const extendedEvent = {
-      ...event.toPlainObject(),
-      extendedProps: {
-        ...event.extendedProps,
-        inclusiveEndDate: inclusiveEndDate // Stocker la date inclusive
-      }
-    };
-
-    // Appeler le gestionnaire d'événement original avec les données enrichies
-    if (taskHandlers.handleEventResize) {
-      taskHandlers.handleEventResize({
-        ...info,
-        enrichedEvent: extendedEvent
-      });
-    }
-  };
-
 
   return (
     <div className="calendar-container ml-4">
@@ -573,11 +511,11 @@ export const CalendarMain = ({
         }}
         // Gestionnaires d'événements
         eventDragStart={taskHandlers.handleEventDragStart}
-        eventDrop={handleEventDrop}
+        eventDrop={taskHandlers.handleEventDrop}
         drop={taskHandlers.handleExternalDrop}
         select={taskHandlers.handleDateClick}
         eventClick={taskHandlers.handleCalendarEventClick}
-        eventResize={handleEventResize}
+        eventResize={taskHandlers.handleEventResize}
         eventDragStop={taskHandlers.handleEventDragStop}
         eventReceive={taskHandlers.handleEventReceive}
       />

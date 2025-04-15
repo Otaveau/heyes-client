@@ -86,6 +86,9 @@ export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
       if (dropZoneRefs?.current) {
         dropZoneRefs.current.forEach((ref, index) => {
           if (!ref?.current) return;
+
+          // Ignorer le taskboard 2 pour la surbrillance
+          if (dropZones[index]?.statusId === '2') return;
           
           
           const dropZoneEl = ref.current;
@@ -112,7 +115,7 @@ export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
       } else if (taskBoardContainer) {
         taskBoardContainer.classList.remove('taskboard-highlight-intense');
       }
-    }, [dropZoneRefs]);
+    }, [dropZoneRefs, dropZones]);
   
     // Créer l'élément fantôme pour le glisser-déposer
     const createGhostElement = useCallback((info) => {
