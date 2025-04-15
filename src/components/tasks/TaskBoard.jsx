@@ -220,9 +220,6 @@ export const TaskBoard = ({
 
               const taskStatusId = extractStatusId();
 
-              // Debug pour voir les statusId des tâches et des zones
-              console.log(`Task ${task.id} statusId: ${taskStatusId}, Zone statusId: ${zone.statusId}`);
-
               // Vérifier si c'est un congé 
               const isConge =
                 task.isConge === true ||

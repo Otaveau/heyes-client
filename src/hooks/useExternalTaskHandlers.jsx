@@ -139,7 +139,6 @@ export const useExternalTaskHandlers = (
   // Vérifier si un événement est au-dessus d'une zone de dépôt
   const isEventOverDropZone = useCallback((position) => {
     try {
-      // Méthode alternative de détection des zones de dépôt
       // Utiliser les sélecteurs DOM pour trouver toutes les zones de dépôt visibles
       const droppableElements = document.querySelectorAll('[data-status-id]');
 
@@ -163,6 +162,10 @@ export const useExternalTaskHandlers = (
           // Obtenir l'ID de statut de l'élément
           const statusId = element.dataset.statusId;
           if (!statusId) continue;
+
+          if (statusId === '2') {
+            return null;
+          }
 
           // Trouver la dropZone correspondante
           const dropZone = dropZones.find(zone => zone.statusId === statusId);
@@ -281,13 +284,11 @@ export const useExternalTaskHandlers = (
 
       // Si c'est un congé, ignorer le drop
       if (isConge) {
-
         // Restaurer visuellement l'élément
         if (info.el) {
           info.el.style.display = '';
           info.el.style.opacity = '1';
         }
-
         return; // Sortir sans effectuer le drop
       }
     }
@@ -390,7 +391,7 @@ export const useExternalTaskHandlers = (
         if (typeof handleTaskUpdate === 'function') {
           try {
             // IMPORTANT: Définir skipApiCall à false pour s'assurer que l'API est appelée
-            const response = await handleTaskUpdate(taskId, updates, {
+            await handleTaskUpdate(taskId, updates, {
               skipApiCall: false,
               successMessage: `Tâche déplacée vers ${dropZone.title || 'la colonne'}`
             });

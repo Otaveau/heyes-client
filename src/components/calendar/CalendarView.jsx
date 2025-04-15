@@ -28,7 +28,6 @@ export const CalendarView = () => {
 
   // Zones de dépôt pour le TaskBoard
   const dropZones = useMemo(() => {
-    console.log ('statuses :', statuses);
      // Trier les statuses par leur statusId
      const sortedStatuses = [...statuses].sort((a, b) => {
       const idA = parseInt(a.statusId, 10);

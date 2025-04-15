@@ -84,6 +84,11 @@ export const useCalendarEventHandlers = (
     }
 
     const targetStatusId = event._def.extendedProps.statusId || existingTask.extendedProps?.statusId;
+
+    console.log('targetStatusId', targetStatusId);
+
+
+
     const resourceId = event._def.resourceIds[0];
 
     // Préparer les mises à jour avec les deux formats de dates

@@ -28,7 +28,6 @@ export default function TeamManagement() {
     try {
       const data = await fetchTeams();
       setTeams(data);
-      console.log('Teams loaded:', data);
     } catch (error) {
       console.error('Error fetching teams:', error);
       setError('Impossible de charger les teams. Veuillez réessayer plus tard.');

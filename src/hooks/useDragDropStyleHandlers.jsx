@@ -314,12 +314,7 @@ export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
   
     // Préparation d'un événement pour le TaskBoard
     const prepareEventForTaskBoard = useCallback((event, targetDropZone) => {
-      // Si c'est le taskboard 2, retourner null pour bloquer le traitement
-      if (targetDropZone.statusId === '2') {
-        console.log('Déplacement vers taskboard 2 bloqué');
-        return null;
-      }
-      
+
       return {
         statusId: targetDropZone.statusId,
         ownerId: null,
