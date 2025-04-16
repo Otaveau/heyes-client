@@ -18,7 +18,7 @@ export const useExternalTaskHandlers = (
   const ghostElementRef = useRef(null);
 
   // Fonction utilitaire pour obtenir la date de fin inclusive
-  const getInclusiveEndDate = useCallback((task) => {
+  const getInclusiveEndDateForTask = useCallback((task) => {
     // Si la date inclusive est stockée dans extendedProps
     if (task.extendedProps?.inclusiveEndDate) {
       return task.extendedProps.inclusiveEndDate;
@@ -45,7 +45,7 @@ export const useExternalTaskHandlers = (
     if (!fullTask) return;
 
     // Obtenir la date de fin inclusive
-    const inclusiveEndDate = getInclusiveEndDate(fullTask);
+    const inclusiveEndDate = getInclusiveEndDateForTask(fullTask);
 
     // Utiliser les dates en incluant la date de fin inclusive
     setCalendarState(prev => ({
@@ -66,7 +66,7 @@ export const useExternalTaskHandlers = (
         }
       }
     }));
-  }, [setCalendarState, tasks, getInclusiveEndDate]);
+  }, [setCalendarState, tasks, getInclusiveEndDateForTask]);
 
   // Mettre en surbrillance le TaskBoard
   const highlightTaskBoard = useCallback((isHighlighted) => {

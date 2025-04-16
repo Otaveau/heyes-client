@@ -2,12 +2,6 @@
  * Utilitaires pour la gestion des styles de drag-and-drop
  * Ce module permet d'injecter et de gérer dynamiquement les styles CSS liés au drag-and-drop
  */
-
-/**
- * Applique les styles nécessaires pour le glisser-déposer des tâches
- * Cette fonction injecte dynamiquement une feuille de style dans le head du document
- * @returns {void}
- */
 export const applyDragDropStyles = () => {
     // Vérifier si les styles sont déjà ajoutés
     let styleElement = document.getElementById('drag-drop-styles');
@@ -94,19 +88,7 @@ export const applyDragDropStyles = () => {
   };
   
   /**
-   * Nettoie les styles de drag-and-drop lorsqu'ils ne sont plus nécessaires
-   * @returns {void}
-   */
-  export const cleanupDragDropStyles = () => {
-    const styleElement = document.getElementById('drag-drop-styles');
-    if (styleElement && styleElement.parentNode) {
-      styleElement.parentNode.removeChild(styleElement);
-    }
-  };
-  
-  /**
    * Met en surbrillance le tableau de tâches (TaskBoard)
-   * @param {boolean} isHighlighted - Indique si le tableau doit être en surbrillance
    */
   export const highlightTaskBoard = (isHighlighted) => {
     const taskBoardContainer = document.querySelector('.taskboard-container');
@@ -122,7 +104,6 @@ export const applyDragDropStyles = () => {
   
   /**
    * Nettoie toutes les surbrillances du TaskBoard et des zones de dépôt
-   * @param {Array} dropZoneRefs - Références aux zones de dépôt
    */
   export const cleanupAllHighlights = (dropZoneRefs) => {
     const taskBoardContainer = document.querySelector('.taskboard-container');
