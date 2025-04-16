@@ -85,6 +85,12 @@
   /* Transitions */
   --transition-fast: all 0.2s ease;
   --transition-med: all 0.3s ease;
+  
+  /* Variables pour drag and drop (ajoutées) */
+  --dnd-highlight-color: rgba(74, 108, 247, 0.5);
+  --dnd-highlight-color-intense: rgba(74, 108, 247, 0.7);
+  --dnd-highlight-shadow: 0 0 15px rgba(74, 108, 247, 0.4);
+  --dnd-highlight-shadow-intense: 0 0 20px rgba(74, 108, 247, 0.6);
 }
 
 /* ===================================
@@ -397,7 +403,60 @@ button.fc-today-button:hover {
  * 6. Drag and Drop
  * =================================== */
 
-/* Zones de drop */
+/* Transitions fluides pour les éléments */
+.fc-event {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Style de base pour la surbrillance */
+.taskboard-highlight {
+  box-shadow: 0 0 0 2px var(--dnd-highlight-color), var(--dnd-highlight-shadow);
+  border-radius: var(--radius-lg);
+  animation: pulse-border 1.5s infinite ease-in-out;
+  transition: var(--transition-fast);
+}
+
+/* Style pour surbrillance intense */
+.taskboard-highlight-intense {
+  box-shadow: 0 0 0 3px var(--dnd-highlight-color-intense), var(--dnd-highlight-shadow-intense);
+}
+
+/* Élément fantôme */
+.task-ghost-element {
+  font-weight: bold;
+  border: 2px solid var(--dnd-highlight-color-intense);
+  transform-origin: center center;
+}
+
+/* Animation d'apparition dans le TaskBoard */
+.task-added {
+  animation: taskAddedAnimation 0.5s ease-in-out;
+}
+
+/* Placeholder temporaire */
+.temporary-task-placeholder {
+  background-color: rgba(74, 108, 247, 0.2);
+  border: 2px dashed var(--dnd-highlight-color-intense);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+/* Mise en surbrillance des zones de dépôt actives */
+.dropzone-active {
+  background-color: rgba(74, 108, 247, 0.15) !important;
+  border: 2px dashed #4a6cf7 !important;
+  transform: scale(1.02);
+  transition: var(--transition-fast);
+}
+
+/* Zone de dépôt potentielle */
+.potential-drop-target {
+  background-color: rgba(230, 230, 250, 0.3);
+  transition: var(--transition-med);
+  border: 1px dashed #ccc;
+}
+
+/* Amélioration du style pour les zones de drop */
 .potential-drop-target {
   transition: var(--transition-fast);
   border-radius: var(--radius-lg);
@@ -535,7 +594,7 @@ button.fc-today-button:hover {
 /* ===================================
  * 10. Animations
  * =================================== */
-@keyframes pulse-border {
+ @keyframes pulse-border {
   0% {
     box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.5), 0 0 15px rgba(74, 108, 247, 0.4);
   }
@@ -728,4 +787,6 @@ button.fc-today-button:hover {
 .dropzone-pulse {
   animation: pulseTarget 1.5s infinite;
 }
+
+
 

@@ -1,6 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
 import {
-  applyDragDropStyles,
   cleanupAllHighlights
 } from '../utils/dndUtils';
 
@@ -12,8 +11,6 @@ export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
   
     // Appliquer les styles nécessaires au chargement
     useEffect(() => {
-      // Injecter les styles CSS
-      applyDragDropStyles();
   
       // Nettoyage au démontage
       return () => {
