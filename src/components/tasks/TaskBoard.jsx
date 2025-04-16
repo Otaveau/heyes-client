@@ -4,6 +4,29 @@ import { Draggable } from '@fullcalendar/interaction';
 import { DateUtils } from '../../utils/dateUtils';
 import { Button } from '../ui/button';
 
+const addTaskAppearEffect = (taskElement) => {
+  if (!taskElement) return;
+  
+  // Ajouter la classe pour l'animation
+  taskElement.classList.add('task-newly-added');
+  
+  // Supprimer la classe après l'animation pour éviter les problèmes de style
+  setTimeout(() => {
+    taskElement.classList.remove('task-newly-added');
+  }, 800); // Légèrement plus long que la durée de l'animation
+};
+
+// 3. Fonction pour gérer l'effet de pulsation sur la zone de drop
+const addDropzonePulseEffect = (zoneElement, isActive) => {
+  if (!zoneElement) return;
+  
+  if (isActive) {
+    zoneElement.classList.add('dropzone-active', 'dropzone-pulse');
+  } else {
+    zoneElement.classList.remove('dropzone-active', 'dropzone-pulse');
+  }
+};
+
 export const TaskBoard = ({
   dropZones = [],
   dropZoneRefs,
@@ -17,6 +40,7 @@ export const TaskBoard = ({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const draggablesRef = useRef([]);
+  const [activeDropZone, setActiveDropZone] = useState(null);
 
   // Créer des références locales si aucune n'est fournie
   const internalRefs = useRef([]);
@@ -113,6 +137,33 @@ export const TaskBoard = ({
     return resource ? resource.title : `ID: ${resourceId}`;
   };
 
+  // Observer les changements dans les zones pour ajouter les effets d'apparition aux nouvelles tâches
+  useEffect(() => {
+    // Pour chaque dropzone, configurer un observateur de mutation
+    effectiveRefs.current.forEach((ref, index) => {
+      if (!ref || !ref.current) return;
+      
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach((node) => {
+              if (node.classList && node.classList.contains('fc-event')) {
+                addTaskAppearEffect(node);
+              }
+            });
+          }
+        });
+      });
+      
+      // Observer les changements d'enfants dans la zone
+      observer.observe(ref.current, { childList: true });
+      
+      // Nettoyer l'observateur lors du démontage
+      return () => observer.disconnect();
+    });
+  }, [effectiveRefs, dropZones]);
+
+
   // Initialisation des draggables FullCalendar pour le calendrier
   useEffect(() => {
     // S'assurer que les refs sont initialisées
@@ -167,10 +218,59 @@ export const TaskBoard = ({
           }
         });
 
+        // Ajouter les événements de drag and drop pour les effets visuels
+        draggable.on('dragstart', () => {
+          // Activer les effets visuels sur toutes les zones de drop potentielles
+          effectiveRefs.current.forEach((dropRef, i) => {
+            if (dropRef && dropRef.current && i !== index) {
+              dropRef.current.classList.add('potential-drop-target');
+            }
+          });
+        });
+
+        draggable.on('dragend', () => {
+          // Désactiver les effets visuels
+          effectiveRefs.current.forEach((dropRef) => {
+            if (dropRef && dropRef.current) {
+              dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
+            }
+          });
+          setActiveDropZone(null);
+        });
+
         draggablesRef.current[index] = draggable;
       } catch (error) {
         console.error(`Erreur lors de la création du draggable pour la zone ${index}:`, error);
       }
+    });
+
+    // Configuration des événements pour les effets visuels sur les zones de drop
+    effectiveRefs.current.forEach((ref, index) => {
+      if (!ref || !ref.current) return;
+      
+      const element = ref.current;
+      
+      // Événements de drag over/enter/leave pour les effets visuels
+      element.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (activeDropZone !== index) {
+          setActiveDropZone(index);
+          addDropzonePulseEffect(element, true);
+        }
+      });
+      
+      element.addEventListener('dragleave', () => {
+        addDropzonePulseEffect(element, false);
+        setActiveDropZone(null);
+      });
+      
+      element.addEventListener('drop', (e) => {
+        e.preventDefault();
+        addDropzonePulseEffect(element, false);
+        setActiveDropZone(null);
+        
+        // L'effet d'apparition pour la nouvelle tâche sera géré par l'observateur de mutation
+      });
     });
 
     return () => {
@@ -179,7 +279,7 @@ export const TaskBoard = ({
         if (draggable) draggable.destroy();
       });
     };
-  }, [effectiveRefs, externalTasks, dropZones, dropZoneRefs]);
+  }, [effectiveRefs, externalTasks, dropZones, dropZoneRefs, activeDropZone]);
 
   return (
     <>

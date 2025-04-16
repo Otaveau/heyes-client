@@ -386,3 +386,108 @@ button.fc-today-button:hover {
   .month-full { display: inline; }
   .month-abbr { display: none; }
 }
+
+/* ===================================
+ * Styles améliorés pour les taskboards
+ * =================================== */
+
+/* 1. Amélioration des titres de taskboards */
+.taskboard-container h3 {
+  text-align: center;
+  font-family: 'Inter', sans-serif; /* Police moderne, ajouter le lien Google Fonts si nécessaire */
+  color: #4b5563; /* Gris fondu plus élégant */
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Style spécifique pour le titre du taskboard "En cours" */
+.bg-blue-50 h3 {
+  color: #2563eb;
+  border-bottom-color: #93c5fd;
+}
+
+/* 2. Amélioration du style pour le drag and drop */
+/* Style amélioré pour les zones de drop pendant le drag */
+.potential-drop-target.dropzone-active {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  border: none !important;
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.4), 0 5px 15px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+  transition: all 0.2s ease-out;
+}
+
+/* Style normal des zones de drop */
+.potential-drop-target {
+  transition: all 0.2s ease-out;
+  border-radius: 8px;
+  background-color: #f3f4f6;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Ajout d'un effet d'échelle sur les conteneurs taskboard au survol */
+.potential-drop-target:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* 3. Animation pour l'apparition d'une nouvelle tâche */
+@keyframes taskAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: white;
+  }
+}
+
+/* Classe à ajouter dynamiquement à la tâche nouvellement ajoutée */
+.task-newly-added {
+  animation: taskAppear 0.6s ease-out forwards;
+}
+
+/* Renforcement de l'apparence des taskboards */
+.taskboard-container {
+  padding: 10px;
+  background-color: #fafafa;
+  border-radius: 12px;
+}
+
+/* Raffinement du style des tâches */
+.fc-event {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.fc-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+/* Animation subtile pour les zones de taskboard lors du drag over */
+@keyframes pulseTarget {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.dropzone-pulse {
+  animation: pulseTarget 1.5s infinite;
+}
