@@ -422,21 +422,6 @@ export const TaskForm = ({
                                         </option>
                                     ))}
                                 </select>
-                                
-                                {/* Indicateur visuel du statut actuel */}
-                                {formData.statusId && (
-                                    <div 
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 rounded-full"
-                                        style={{ 
-                                            backgroundColor: 
-                                                formData.statusId === '1' ? '#9CA3AF' : // Gris pour "À faire"
-                                                formData.statusId === '2' ? '#3B82F6' : // Bleu pour "En cours"
-                                                formData.statusId === '3' ? '#F59E0B' : // Orange pour "En attente"
-                                                formData.statusId === '4' ? '#10B981' : // Vert pour "Terminé"
-                                                '#9CA3AF' // Gris par défaut
-                                        }}
-                                    ></div>
-                                )}
                             </div>
                             
                             {errors.statusId && (
