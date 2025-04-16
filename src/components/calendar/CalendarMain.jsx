@@ -3,10 +3,49 @@ import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
-import { DateUtils } from '../../utils/dateUtils';
+import { isHolidayOrWeekend, isHoliday } from '../../utils/dateUtils';
 import { getEnhancedCalendarStyles } from '../../style/calendarStyles';
 import { generateTaskColorFromBaseColor, getContrastTextColor, adjustColor } from '../../utils/colorUtils';
 import { CalendarNavigation } from './CalendarNavigation';
+import { DEFAULT_COLOR, TEAM_BACKGROUND_ALPHA, CONGE_EVENT_STYLE} from '../../constants/constants';
+
+
+// Configuration de FullCalendar
+const CALENDAR_CONFIG = {
+  locale: frLocale,
+  timeZone: 'UTC',
+  nextDayThreshold: "00:00:00",
+  slotLabelFormat: [
+    { month: 'long' },
+    { weekday: 'short', day: 'numeric' }
+  ],
+  eventTimeFormat: {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'UTC'
+  },
+  plugins: [resourceTimelinePlugin, interactionPlugin],
+  height: 'auto',
+  schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+  initialView: 'resourceTimelineYear',
+  headerToolbar: false,
+  editable: true,
+  selectable: true,
+  selectMirror: true,
+  droppable: true,
+  resourceAreaWidth: "15%",
+  slotDuration: { days: 1 },
+  selectConstraint: {
+    start: '00:00',
+    end: '24:00'
+  },
+  weekends: true,
+  resourceOrder: "title",
+  resourcesInitiallyExpanded: true,
+  resourceAreaHeaderContent: ""
+};
+
 
 export const CalendarMain = ({
   calendarRef,
@@ -302,8 +341,8 @@ export const CalendarMain = ({
           const endDate = new Date(dropInfo.end);
           endDate.setDate(endDate.getDate() - 1);
 
-          if (DateUtils.isHolidayOrWeekend(startDate, holidays) ||
-            DateUtils.isHolidayOrWeekend(endDate, holidays)) {
+          if (isHolidayOrWeekend(startDate, holidays) ||
+            isHolidayOrWeekend(endDate, holidays)) {
             return false;
           }
 
@@ -313,7 +352,7 @@ export const CalendarMain = ({
         slotLabelClassNames={(arg) => {
           if (!arg?.date) return [];
           const classes = [];
-          if (arg.level === 1 && DateUtils.isHolidayOrWeekend(arg.date, holidays)) {
+          if (arg.level === 1 && isHolidayOrWeekend(arg.date, holidays)) {
             // Utiliser weekend-slot pour tous les jours non ouvrés
             classes.push('weekend-slot');
           }
@@ -322,28 +361,27 @@ export const CalendarMain = ({
         slotLaneClassNames={(arg) => {
           if (!arg?.date) return '';
           // Utiliser weekend-column pour tous les jours non ouvrés
-          return DateUtils.isHolidayOrWeekend(arg.date, holidays) ? 'weekend-column' : '';
+          return isHolidayOrWeekend(arg.date, holidays) ? 'weekend-column' : '';
         }}
         dayHeaderClassNames={(arg) => {
           if (!arg?.date) return '';
           // Utiliser weekend-header pour tous les jours non ouvrés
-          return DateUtils.isHolidayOrWeekend(arg.date, holidays) ? 'weekend-header' : '';
+          return isHolidayOrWeekend(arg.date, holidays) ? 'weekend-header' : '';
         }}
         dayCellClassNames={(arg) => {
           if (!arg?.date) return [];
           const classes = [];
           // Appliquer weekend-cell à tous les jours non ouvrés
-          if (DateUtils.isHolidayOrWeekend(arg.date, holidays)) {
+          if (isHolidayOrWeekend(arg.date, holidays)) {
             classes.push('weekend-cell');
           }
-          // Vous pouvez toujours garder holiday-cell pour une distinction visuelle si nécessaire
-          if (DateUtils.isHoliday(arg.date, holidays)) {
+          // Garder holiday-cell pour une distinction visuelle si nécessaire
+          if (isHoliday(arg.date, holidays)) {
             classes.push('holiday-cell');
           }
           return classes;
         }}
 
-        // Dans votre composant CalendarMain.jsx, modifiez uniquement la fonction eventContent:
         eventContent={(arg) => {
           const { event } = arg;
 

@@ -2,6 +2,32 @@ export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export const REQUEST_TIMEOUT = 15000; // 15 secondes
 
+export const DEFAULT_COLOR = '#9CA3AF';
+
+export const TEAM_BACKGROUND_ALPHA = '10'; // 10% d'opacité
+
+// Styles pour les événements de congés
+const CONGE_EVENT_STYLE = `
+  position: relative;
+  height: 100%;
+  padding: 3px 6px; 
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  overflow: visible;
+  text-overflow: ellipsis; 
+  white-space: nowrap;
+  background: repeating-linear-gradient(
+    45deg,
+    #e5e7eb,
+    #e5e7eb 4px,
+    #f3f4f6 4px,
+    #f3f4f6 8px
+  );
+  border-left: 3px solid #9ca3af;
+  color: #4b5563;
+  font-weight: 600;
+`;
+
 export const STATUS_TYPES = {
   ENTRANT: 'entrant',
   WIP: 'wip',

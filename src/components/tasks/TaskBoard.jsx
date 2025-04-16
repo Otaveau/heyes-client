@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
-import { DateUtils } from '../../utils/dateUtils';
 import { Button } from '../ui/button';
+import { getInclusiveEndDate } from '../../utils/dateUtils';
+
 
 const addTaskAppearEffect = (taskElement) => {
   if (!taskElement) return;
@@ -385,7 +386,7 @@ export const TaskBoard = ({
                           {/* Dates de la tâche */}
                           <div className="text-xs text-gray-600 mt-1">
                             <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
-                            <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
+                            <div><span className="font-medium">Fin:</span> {formatDate(getInclusiveEndDate(task))}</div>
                           </div>
                         </>
                       )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, User } from 'lucide-react';
 import { ERROR_MESSAGES } from '../../constants/constants';
-import { DateUtils } from '../../utils/dateUtils';
+import { getInclusiveEndDate } from '../../utils/dateUtils';
 
 const formatDate = (dateString) => {
   if (!dateString) return null;
@@ -78,7 +78,7 @@ export const TaskCard = ({
 
   const handleClick = () => {
     if (!disabled && onTaskClick) {
-      const inclusiveEndDate = DateUtils.getInclusiveEndDate(task);
+      const inclusiveEndDate = getInclusiveEndDate(task);
       const enrichedTask = {
         ...task,
         extendedProps: {
