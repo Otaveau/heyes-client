@@ -19,20 +19,6 @@ export const fetchTeams = async () => {
     }
 };
 
-export const getTeamById = async (id) => {
-    try {
-        if (!id) throw new Error('ID d\'équipe requis');
-
-        const response = await fetchWithTimeout(`/api/teams/${id}`, {
-            headers: getAuthHeaders()
-        });
-        return handleResponse(response);
-    } catch (error) {
-        console.error('Erreur lors de la récupération de l\'équipe:', error);
-        throw error;
-    }
-};
-
 export const createTeam = async (teamData) => {
     try {
         validateTeamData(teamData);

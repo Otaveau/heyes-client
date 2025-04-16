@@ -3,8 +3,8 @@ import { useCalendarData } from '../../hooks/useCalendarData';
 import { useTaskHandlers } from '../../hooks/useTaskHandlers';
 import { useCalendarNavigation } from '../../hooks/useCalendarNavigation';
 import { CalendarMain } from '../calendar/CalendarMain';
-import { TaskBoard } from '../tasks/TaskBoard';
-import { TaskForm } from '../tasks/TaskForm';
+import { TaskBoard } from '../taskBoard/TaskBoard';
+import { TaskForm } from '../form/TaskForm';
 import '../../style/CalendarView.css';
 
 export const CalendarView = () => {

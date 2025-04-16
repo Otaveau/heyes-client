@@ -132,7 +132,7 @@ export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
       ghostEl.style.pointerEvents = 'none';
       ghostEl.style.width = `${originalRect.width}px`;
       ghostEl.style.height = `${originalRect.height}px`;
-      ghostEl.style.backgroundColor = computedStyle.backgroundColor || '#4a6cf7';
+      ghostEl.style.backgroundColor = '#fcfcfc';
       ghostEl.style.color = computedStyle.color || 'white';
       ghostEl.style.borderRadius = computedStyle.borderRadius || '4px';
       ghostEl.style.padding = computedStyle.padding || '4px';
