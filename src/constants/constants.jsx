@@ -7,7 +7,7 @@ export const DEFAULT_COLOR = '#9CA3AF';
 export const TEAM_BACKGROUND_ALPHA = '10'; // 10% d'opacité
 
 // Styles pour les événements de congés
-const CONGE_EVENT_STYLE = `
+export const CONGE_EVENT_STYLE = `
   position: relative;
   height: 100%;
   padding: 3px 6px; 

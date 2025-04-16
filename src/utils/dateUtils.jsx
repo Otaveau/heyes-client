@@ -6,6 +6,34 @@
  * - FullCalendar : utilise des dates EXCLUSIVES (la date de fin n'est pas incluse dans l'événement)
  */
 
+// Naviguer à aujourd'hui
+export const navigateToToday = (calendarRef, selectedYear, setSelectedYear, navigateToMonth) => {
+  if (calendarRef.current) {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    // Si nous sommes dans une année différente, changer d'année d'abord
+    if (currentYear !== selectedYear) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.gotoDate(today);
+
+      if (typeof setSelectedYear === 'function') {
+        setSelectedYear(currentYear);
+      }
+    } else {
+      // Si nous sommes déjà dans la bonne année, juste naviguer au mois courant
+      navigateToMonth(currentMonth);
+    }
+
+    // Faire défiler vers la position actuelle
+    setTimeout(() => {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.scrollToTime({ month: currentMonth, date: today.getDate() });
+    }, 100);
+  }
+}
+
 export const getInclusiveEndDate = (task) => {
   // Si la propriété inclusiveEndDate est disponible dans extendedProps, l'utiliser
   if (task.extendedProps?.inclusiveEndDate) {
