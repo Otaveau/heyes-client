@@ -30,8 +30,8 @@ export default function Navigation () {
 
   const navItems = [
     { path: '/calendar', icon: <Calendar className="h-6 w-6" />, label: 'Calendrier' },
-    { path: '/owners', icon: <UserCircle className="h-6 w-6" />, label: 'Membres' },
-    { path: '/teams', icon: <Users className="h-6 w-6" />, label: 'Équipes' },
+    { path: '/owners', icon: <UserCircle className="h-6 w-6" />, label: 'Owners' },
+    { path: '/teams', icon: <Users className="h-6 w-6" />, label: 'Teams' },
   ];
 
   return (
