@@ -23,19 +23,28 @@ export const CalendarView = () => {
   // Année actuellement sélectionnée dans le calendrier
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
+  const calendarRef = useRef(null);
+  const { tasks, setTasks, resources, holidays, statuses } = useCalendarData();
+
   // Zones de dépôt pour le TaskBoard
-  const dropZones = useMemo(() => [
-    { id: 'todo', statusId: '1', title: 'À faire' },
-    { id: 'inProgress', statusId: '2', title: 'En cours' },
-    { id: 'blocked', statusId: '3', title: 'En attente' },
-    { id: 'done', statusId: '4', title: 'Done' }
-  ], []);
+  const dropZones = useMemo(() => {
+     // Trier les statuses par leur statusId
+     const sortedStatuses = [...statuses].sort((a, b) => {
+      const idA = parseInt(a.statusId, 10);
+      const idB = parseInt(b.statusId, 10);
+      return idA - idB;
+    });
+
+    // Transformer les statuses en dropZones
+    return sortedStatuses.map(status => ({
+      statusId: status.statusId.toString(),
+      title: status.statusType,
+      disabled: status.statusId.toString() === '2'
+    }));
+  }, [statuses]);
 
   // Créer les références pour les zones de dépôt
   const dropZoneRefs = useRef(dropZones.map(() => createRef()));
-
-  const calendarRef = useRef(null);
-  const { tasks, setTasks, resources, holidays, statuses } = useCalendarData();
 
   // Gérer la fermeture du formulaire
   const handleFormClose = () => {
@@ -46,6 +55,19 @@ export const CalendarView = () => {
       selectedDates: null,
       taskboardDestination: null,
       taskOriginId: null
+    }));
+  };
+
+  // Fonction pour ouvrir le formulaire de création de tâche
+  const handleCreateTask = () => {
+    setCalendarState(prev => ({
+      ...prev,
+      isFormOpen: true,
+      selectedTask: null,
+      selectedDates: {
+        start: new Date(),
+        end: new Date()
+      }
     }));
   };
 
@@ -171,8 +193,6 @@ export const CalendarView = () => {
           );
         }
       } else {
-
-        console.log('updatedTask', updatedTask)
 
         // Préparer les dates inclusives et exclusives
         const startDate = updatedTask.startDate || updatedTask.start;
@@ -323,6 +343,7 @@ export const CalendarView = () => {
           onDeleteTask={taskHandlers.handleDeleteTask}
           resources={resources}
           onMoveTask={handleMoveTask}
+          onCreateTask={handleCreateTask}
         />
       </div>
 
@@ -335,6 +356,7 @@ export const CalendarView = () => {
         statuses={statuses}
         onSubmit={handleFormSubmit}
         isProcessing={calendarState.isProcessing}
+        onDeleteTask={taskHandlers.handleDeleteTask}
       />
     </div>
   );

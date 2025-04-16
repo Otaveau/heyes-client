@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
-// Importez la fonction register du service auth
 import { register } from '../../services/api/authService';
 
 const Register = () => {

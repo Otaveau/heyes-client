@@ -8,7 +8,7 @@ import { fetchTeams } from '../../services/api/teamService';
 import ConfirmationModal from '../ui/confirmationModal';
 
 // Import des fonctions de couleur centralisées
-import { getTeamColor, getContrastTextColor } from '../../utils/colorUtils';
+import { getContrastTextColor } from '../../utils/colorUtils';
 
 export default function OwnerManagement() {
   const [owners, setOwners] = useState([]);
@@ -30,7 +30,7 @@ export default function OwnerManagement() {
   const previousSelectedOwner = useRef(null);
 
   useEffect(() => {
-    // Afficher les détails du membre sélectionné dans la console
+    // Afficher les détails du owner sélectionné dans la console
     if (selectedOwner && selectedOwner !== previousSelectedOwner.current) {
       previousSelectedOwner.current = selectedOwner;
     }
@@ -44,7 +44,7 @@ export default function OwnerManagement() {
       setOwners(data);
     } catch (error) {
       console.error('Error fetching owners:', error);
-      setError('Impossible de charger les membres. Veuillez réessayer plus tard.');
+      setError('Impossible de charger les owners. Veuillez réessayer plus tard.');
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +56,7 @@ export default function OwnerManagement() {
       setTeams(data);
     } catch (error) {
       console.error('Error fetching teams:', error);
-      setError('Impossible de charger les équipes. Veuillez réessayer plus tard.');
+      setError('Impossible de charger les teams. Veuillez réessayer plus tard.');
     }
   };
 
@@ -76,7 +76,7 @@ export default function OwnerManagement() {
       // Vérification si le name existe déjà
       const existingOwner = owners.find(owner => owner.name.toLowerCase() === newOwner.name.toLowerCase());
       if (existingOwner) {
-        setError('Un membre avec ce nom existe déjà');
+        setError('Un owner avec ce nom existe déjà');
         setIsSubmitting(false);
         return;
       }
@@ -101,7 +101,7 @@ export default function OwnerManagement() {
         window.location.href = '/login';
         return;
       } else {
-        setError('Erreur lors de la création du membre. Veuillez réessayer.');
+        setError('Erreur lors de la création du owner. Veuillez réessayer.');
       }
     } finally {
       setIsSubmitting(false);
@@ -132,7 +132,7 @@ export default function OwnerManagement() {
       // Utilisation du service deleteOwner
       await deleteOwner(ownerId);
 
-      // Si le membre supprimé était sélectionné, désélectionner
+      // Si le owner supprimé était sélectionné, désélectionner
       if (selectedOwner && (selectedOwner.id === ownerId || selectedOwner.owner_id === ownerId || selectedOwner.ownerId === ownerId)) {
         setSelectedOwner(null);
         setEditMode(false);
@@ -146,7 +146,7 @@ export default function OwnerManagement() {
         window.location.href = '/login';
         return;
       } else {
-        setError('Erreur lors de la suppression du membre. Veuillez réessayer.');
+        setError('Erreur lors de la suppression du owner. Veuillez réessayer.');
       }
     } finally {
       setIsLoading(false);
@@ -208,11 +208,14 @@ export default function OwnerManagement() {
       const existingOwner = owners.find(owner => {
         const ownerName = owner.name.toLowerCase();
         const editedName = editedOwner.name.toLowerCase();
-        return ownerName === editedName;
+        const currentOwnerId = owner.id || owner.owner_id || owner.ownerId;
+      
+      // Vérifier si le nom existe ET s'il appartient à un propriétaire différent
+      return ownerName === editedName && currentOwnerId !== ownerId;
       });
 
       if (existingOwner) {
-        setError('Un autre membre utilise déjà ce nom');
+        setError('Un autre owner utilise déjà ce nom');
         setIsSubmitting(false);
         return;
       }
@@ -224,7 +227,7 @@ export default function OwnerManagement() {
 
       const updatedOwner = await updateOwner(ownerId, sanitizedOwner);
 
-      // Récupérer le nom de l'équipe pour l'ajouter aux informations du membre
+      // Récupérer le nom de team pour l'ajouter aux informations du owner
       const teamId = updatedOwner.teamId || updatedOwner.team_id;
       const teamName = getTeamNameById(teamId);
 
@@ -237,13 +240,13 @@ export default function OwnerManagement() {
         teamName: teamName
       };
 
-      // Mettre à jour le membre sélectionné
+      // Mettre à jour le owner sélectionné
       setSelectedOwner(normalizedOwner);
 
       // Sortir du mode édition
       setEditMode(false);
 
-      // Recharger la liste des membres
+      // Recharger la liste des owners
       await loadOwners();
     } catch (error) {
       console.error('Error updating owner:', error);
@@ -254,7 +257,7 @@ export default function OwnerManagement() {
         window.location.href = '/login';
         return;
       } else {
-        setError('Erreur lors de la mise à jour du membre. Veuillez réessayer.');
+        setError('Erreur lors de la mise à jour du owner. Veuillez réessayer.');
       }
     } finally {
       setIsSubmitting(false);
@@ -276,20 +279,30 @@ export default function OwnerManagement() {
     return team ? team.name : 'N/A';
   };
 
-  // Get team color
+  // Nouvelle fonction pour obtenir la couleur de team à partir de la propriété color
   const getTeamColorById = (teamId) => {
-    if (!teamId) return '#9CA3AF';
-    const formattedTeamId = `team_${teamId}`;
-    return getTeamColor(formattedTeamId);
+    if (!teamId) return '#9CA3AF'; // Couleur grise par défaut
+    
+    // Convertir en nombre si c'est une chaîne
+    const parsedTeamId = typeof teamId === 'string' ? parseInt(teamId, 10) : teamId;
+    
+    const team = teams.find(t => {
+      // Vérifier à la fois team_id et id
+      const currentTeamId = t.team_id !== undefined ? t.team_id : t.id;
+      return currentTeamId === parsedTeamId;
+    });
+    
+    // Utiliser la propriété color de team si elle existe, sinon fallback sur une couleur par défaut
+    return team && team.color ? team.color : '#9CA3AF';
   };
 
   return (
     <div className="p-8 min-h-screen w-full md:w-4/5 lg:w-3/4 mx-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-3xl text-center font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700">Gestion des membres</h2>
+      <h2 className="text-3xl text-center font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700">Gestion des owners</h2>
 
-      {/* Formulaire d'ajout de membre */}
+      {/* Formulaire d'ajout de owner */}
       <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm mb-10">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Ajouter un membre</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Ajouter un owner</h3>
         <form onSubmit={handleSubmit} className="flex flex-col items-center">
           <div className="grid gap-4 md:grid-cols-2 w-full">
             <div className="space-y-1">
@@ -298,14 +311,14 @@ export default function OwnerManagement() {
                 type="text"
                 value={newOwner.name}
                 onChange={(e) => setNewOwner({ ...newOwner, name: e.target.value })}
-                placeholder="Nom du membre"
+                placeholder="Nom du owner"
                 required
                 disabled={isSubmitting}
                 className="w-full border-gray-300 focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Équipe</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">team</label>
               <select
                 value={newOwner.teamId}
                 onChange={(e) => setNewOwner({ ...newOwner, teamId: e.target.value })}
@@ -313,7 +326,7 @@ export default function OwnerManagement() {
                 required
                 disabled={isSubmitting}
               >
-                <option key="default-new" value="">Sélectionner une équipe</option>
+                <option key="default-new" value="">Sélectionner une team</option>
                 {teams.map(team => {
                   const teamId = team.team_id || team.id;
                   return (
@@ -342,7 +355,7 @@ export default function OwnerManagement() {
               ) : (
                 <>
                   <Plus className="mr-2 h-5 w-5" />
-                  Ajouter un membre
+                  Ajouter un owner
                 </>
               )}
             </Button>
@@ -351,14 +364,14 @@ export default function OwnerManagement() {
         </form>
       </div>
 
-      {/* Conteneur principal qui change de layout basé sur la sélection d'un membre */}
+      {/* Conteneur principal qui change de layout basé sur la sélection d'un owner */}
       <div className={`${selectedOwner ? 'grid gap-10 grid-cols-1 md:grid-cols-2' : 'flex justify-center'}`}>
-        {/* Liste des membres - sera centrée quand aucun membre n'est sélectionné */}
+        {/* Liste des owners - sera centrée quand aucun owner n'est sélectionné */}
         <div className={`space-y-6 ${!selectedOwner ? 'max-w-2xl w-full' : ''}`}>
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Liste des membres</h3>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Liste des owners</h3>
             <div className="bg-blue-50 text-blue-700 text-sm py-1 px-3 rounded-full font-medium">
-              {owners.length} {owners.length > 1 ? 'membres' : 'membre'}
+              {owners.length} {owners.length > 1 ? 'owners' : 'owner'}
             </div>
           </div>
 
@@ -372,8 +385,8 @@ export default function OwnerManagement() {
                 <div className="p-3 bg-gray-100 dark:bg-gray-600 rounded-full">
                   <Trash2 className="h-8 w-8 text-gray-400 dark:text-gray-300" />
                 </div>
-                <p className="font-medium">Aucun membre disponible</p>
-                <p className="text-sm">Utilisez le formulaire ci-dessus pour créer votre premier membre</p>
+                <p className="font-medium">Aucun owner disponible</p>
+                <p className="text-sm">Utilisez le formulaire ci-dessus pour créer votre premier owner</p>
               </div>
             </div>
           ) : (
@@ -395,7 +408,7 @@ export default function OwnerManagement() {
                     onClick={() => handleOwnerSelect(owner)}
                   >
                     <div className="flex">
-                      {/* Bande de couleur de l'équipe */}
+                      {/* Bande de couleur de team */}
                       <div 
                         className="w-2"
                         style={{ backgroundColor: teamColor }}
@@ -406,7 +419,7 @@ export default function OwnerManagement() {
                           <div>
                             <h3 className="font-semibold text-lg">{owner.name}</h3>
                             <div className="mt-2 flex items-center">
-                              {/* Pastille de couleur de l'équipe */}
+                              {/* Pastille de couleur de team */}
                               <div 
                                 className="w-3 h-3 rounded-full mr-1"
                                 style={{ backgroundColor: teamColor }}
@@ -435,12 +448,12 @@ export default function OwnerManagement() {
           )}
         </div>
 
-        {/* Détails du membre sélectionné */}
+        {/* Détails du owner sélectionné */}
         {selectedOwner && (
           <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Détails du membre</h3>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Détails du owner</h3>
             <Card className="p-6 shadow-md bg-white dark:bg-gray-700 overflow-hidden">
-              {/* Bande de couleur en haut de la carte (couleur de l'équipe) */}
+              {/* Bande de couleur en haut de la carte (couleur de team) */}
               <div 
                 className="h-2 -mx-6 -mt-6 mb-5"
                 style={{ backgroundColor: getTeamColorById(selectedOwner.teamId || selectedOwner.team_id) }}
@@ -465,7 +478,7 @@ export default function OwnerManagement() {
                   </div>
                   <div>
                     <label htmlFor="ownerTeam" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Équipe
+                      team
                     </label>
                     <select
                       id="ownerTeam"
@@ -475,7 +488,7 @@ export default function OwnerManagement() {
                       required
                       disabled={isSubmitting}
                     >
-                      <option key="default-edit" value="">Sélectionner une équipe</option>
+                      <option key="default-edit" value="">Sélectionner une team</option>
                       {teams.map(team => {
                         const teamId = team.team_id || team.id;
                         const teamColor = getTeamColorById(teamId);
@@ -532,7 +545,7 @@ export default function OwnerManagement() {
                     <p className="font-medium text-lg mt-1">{selectedOwner.name}</p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-600 p-3 rounded-md">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Équipe</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">team</p>
                     <div className="flex items-center mt-1">
                       <div 
                         className="w-4 h-4 rounded-full mr-2"
@@ -540,20 +553,6 @@ export default function OwnerManagement() {
                       ></div>
                       <p className="font-medium text-lg">{selectedOwner.teamName || getTeamNameById(selectedOwner.teamId || selectedOwner.team_id)}</p>
                     </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-600 p-3 rounded-md">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Couleur de l'équipe</p>
-                    <div className="flex items-center mt-2">
-                      <div 
-                        className="w-6 h-6 rounded mr-3"
-                        style={{ backgroundColor: getTeamColorById(selectedOwner.teamId || selectedOwner.team_id) }}
-                      ></div>
-                      <code className="bg-white dark:bg-gray-700 px-2 py-1 rounded text-sm">
-                        {getTeamColorById(selectedOwner.teamId || selectedOwner.team_id)}
-                      </code>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">Cette couleur est utilisée pour la représentation visuelle de l'équipe dans le calendrier.</p>
                   </div>
                   
                   <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
@@ -577,7 +576,7 @@ export default function OwnerManagement() {
         onClose={closeDeleteModal}
         onConfirm={confirmDelete}
         title="Confirmer la suppression"
-        message={`Êtes-vous sûr de vouloir supprimer ce membre "${ownerToDelete?.name}" ?`}
+        message={`Êtes-vous sûr de vouloir supprimer ce owner "${ownerToDelete?.name}" ?`}
       />
     </div>
   );

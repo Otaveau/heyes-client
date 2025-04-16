@@ -33,7 +33,8 @@ export const useCalendarData = () => {
       if (team && team.team_id) {
         teamDict[team.team_id] = {
           id: team.team_id,
-          name: team.name
+          name: team.name,
+          teamColor: team.color || '#797d7d'
         };
       }
     });
@@ -42,14 +43,17 @@ export const useCalendarData = () => {
     owners.forEach(owner => {
       if (!owner) return;
       const teamId = owner.teamId;
-      const teamName = teamId && teamDict[teamId] ? teamDict[teamId].name : `Équipe ${teamId}`;
+      const team = teamId ? teamDict[teamId] : null;
+      const teamName = team.name;
+      const teamColor = team.teamColor;
       resources.push({
         id: owner.ownerId,
-        title: owner.name || 'Membre sans nom',
+        title: owner.name,
         parentId: `team_${teamId}`,
         extendedProps: {
           teamId: teamId,
-          teamName: teamName
+          teamName: teamName,
+          teamColor: teamColor
         }
       });
     });
@@ -59,7 +63,8 @@ export const useCalendarData = () => {
         id: `team_${team.id}`,
         title: team.name,
         extendedProps: {
-          isTeam: true
+          isTeam: true,
+          color: team.color
         }
       });
     });
@@ -156,7 +161,7 @@ export const useCalendarData = () => {
         }
 
       } catch (err) {
-        console.error('Erreur lors de la récupération des équipes:', err);
+        console.error('Erreur lors de la récupération des teams:', err);
       }
 
       const formattedHolidays = formatHolidays(holidayDates);

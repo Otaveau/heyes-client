@@ -24,7 +24,6 @@ const getApiBaseUrl = () => {
               : `${API_BASE_URL}/${url}`;
       
       try {
-          console.log(`Fetching: ${normalizedUrl}`);
           const response = await fetch(normalizedUrl, {
               ...options,
               signal: controller.signal

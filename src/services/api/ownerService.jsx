@@ -3,7 +3,7 @@ import { handleResponse } from '../apiUtils/errorHandlers';
 
 export const fetchOwners = async () => {
     try {
-        const response = await fetchWithTimeout(`/api/owners`, {
+        const response = await fetchWithTimeout('/api/owners', {
             headers: getAuthHeaders()
         });
 

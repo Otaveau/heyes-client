@@ -5,7 +5,7 @@ import {
 } from '../utils/dndUtils';
 
 
-export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
+export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {
     // Références pour les effets visuels
     const ghostElementRef = useRef(null);
     const dropTimeoutRef = useRef(null);
@@ -84,9 +84,13 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
       let foundMatch = false;
   
       if (dropZoneRefs?.current) {
-        dropZoneRefs.current.forEach(ref => {
+        dropZoneRefs.current.forEach((ref, index) => {
           if (!ref?.current) return;
-  
+
+          // Ignorer le taskboard 2 pour la surbrillance
+          if (dropZones[index]?.statusId === '2') return;
+          
+          
           const dropZoneEl = ref.current;
           const rect = dropZoneEl.getBoundingClientRect();
   
@@ -111,7 +115,7 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
       } else if (taskBoardContainer) {
         taskBoardContainer.classList.remove('taskboard-highlight-intense');
       }
-    }, [dropZoneRefs]);
+    }, [dropZoneRefs, dropZones]);
   
     // Créer l'élément fantôme pour le glisser-déposer
     const createGhostElement = useCallback((info) => {
@@ -179,7 +183,25 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
   
     // Animation de transition vers le TaskBoard
     const simulateImmediateAppearance = useCallback((taskId, targetDropZone) => {
-      const dropZoneIndex = dropZones.findIndex(dz => dz.id === targetDropZone.id);
+      // Ne pas simuler l'apparition si c'est le taskboard 2
+      if (targetDropZone.statusId === '2') {
+        // Annuler le drag-and-drop si c'est vers taskboard 2
+        if (ghostElementRef.current) {
+          ghostElementRef.current.style.transition = 'opacity 0.2s ease';
+          ghostElementRef.current.style.opacity = '0';
+          
+          setTimeout(() => {
+            if (ghostElementRef.current) {
+              document.body.removeChild(ghostElementRef.current);
+              ghostElementRef.current = null;
+            }
+            cleanupAllHighlights(dropZoneRefs);
+          }, 200);
+        }
+        return;
+      }
+      
+      const dropZoneIndex = dropZones.findIndex(dz => dz.statusId === targetDropZone.statusId);
       const dropZoneRef = dropZoneRefs.current[dropZoneIndex];
   
       if (!dropZoneRef || !dropZoneRef.current || !ghostElementRef.current) return;
@@ -244,6 +266,11 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
       for (let index = 0; index < dropZoneRefs.current.length; index++) {
         const ref = dropZoneRefs.current[index];
         if (!ref?.current) continue;
+        
+        // Ignorer le taskboard 2
+        if (dropZones[index]?.statusId === '2') {
+          continue;
+        }
   
         const dropZoneEl = ref.current;
         const rect = dropZoneEl.getBoundingClientRect();
@@ -272,16 +299,22 @@ export const useDragDropHandlers = (dropZoneRefs, dropZones) => {
       }
   
       if (dropZoneRefs?.current) {
-        dropZoneRefs.current.forEach(ref => {
+        dropZoneRefs.current.forEach((ref, index) => {
           if (ref?.current) {
-            ref.current.classList.add('potential-drop-target');
+            // Ne pas ajouter la classe potential-drop-target au taskboard 2
+            if (dropZones[index]?.statusId === '2') {
+              ref.current.classList.add('dropzone-disabled');
+            } else {
+              ref.current.classList.add('potential-drop-target');
+            }
           }
         });
       }
-    }, [createGhostElement, dropZoneRefs, highlightTaskBoard]);
+    }, [createGhostElement, dropZoneRefs, dropZones, highlightTaskBoard]);
   
     // Préparation d'un événement pour le TaskBoard
     const prepareEventForTaskBoard = useCallback((event, targetDropZone) => {
+
       return {
         statusId: targetDropZone.statusId,
         ownerId: null,

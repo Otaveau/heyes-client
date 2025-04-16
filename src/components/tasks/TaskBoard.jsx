@@ -1,7 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
 import { DateUtils } from '../../utils/dateUtils';
+import { Button } from '../ui/button';
+
+const addTaskAppearEffect = (taskElement) => {
+  if (!taskElement) return;
+
+  // Ajouter la classe pour l'animation
+  taskElement.classList.add('task-newly-added');
+
+  // Supprimer la classe après l'animation pour éviter les problèmes de style
+  setTimeout(() => {
+    taskElement.classList.remove('task-newly-added');
+  }, 800); // Légèrement plus long que la durée de l'animation
+};
+
+// 3. Fonction pour gérer l'effet de pulsation sur la zone de drop
+const addDropzonePulseEffect = (zoneElement, isActive) => {
+  if (!zoneElement) return;
+
+  if (isActive) {
+    zoneElement.classList.add('dropzone-active', 'dropzone-pulse');
+  } else {
+    zoneElement.classList.remove('dropzone-active', 'dropzone-pulse');
+  }
+};
 
 export const TaskBoard = ({
   dropZones = [],
@@ -10,11 +34,13 @@ export const TaskBoard = ({
   handleExternalTaskClick,
   onDeleteTask,
   resources = [],
-  onMoveTask
+  onMoveTask,
+  onCreateTask
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const draggablesRef = useRef([]);
+  const [activeDropZone, setActiveDropZone] = useState(null);
 
   // Créer des références locales si aucune n'est fournie
   const internalRefs = useRef([]);
@@ -111,6 +137,33 @@ export const TaskBoard = ({
     return resource ? resource.title : `ID: ${resourceId}`;
   };
 
+  // Observer les changements dans les zones pour ajouter les effets d'apparition aux nouvelles tâches
+  useEffect(() => {
+    // Pour chaque dropzone, configurer un observateur de mutation
+    effectiveRefs.current.forEach((ref, index) => {
+      if (!ref || !ref.current) return;
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach((node) => {
+              if (node.classList && node.classList.contains('fc-event')) {
+                addTaskAppearEffect(node);
+              }
+            });
+          }
+        });
+      });
+
+      // Observer les changements d'enfants dans la zone
+      observer.observe(ref.current, { childList: true });
+
+      // Nettoyer l'observateur lors du démontage
+      return () => observer.disconnect();
+    });
+  }, [effectiveRefs, dropZones]);
+
+
   // Initialisation des draggables FullCalendar pour le calendrier
   useEffect(() => {
     // S'assurer que les refs sont initialisées
@@ -165,10 +218,59 @@ export const TaskBoard = ({
           }
         });
 
+        // Ajouter les événements de drag and drop pour les effets visuels
+        draggable.on('dragstart', () => {
+          // Activer les effets visuels sur toutes les zones de drop potentielles
+          effectiveRefs.current.forEach((dropRef, i) => {
+            if (dropRef && dropRef.current && i !== index) {
+              dropRef.current.classList.add('potential-drop-target');
+            }
+          });
+        });
+
+        draggable.on('dragend', () => {
+          // Désactiver les effets visuels
+          effectiveRefs.current.forEach((dropRef) => {
+            if (dropRef && dropRef.current) {
+              dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
+            }
+          });
+          setActiveDropZone(null);
+        });
+
         draggablesRef.current[index] = draggable;
       } catch (error) {
         console.error(`Erreur lors de la création du draggable pour la zone ${index}:`, error);
       }
+    });
+
+    // Configuration des événements pour les effets visuels sur les zones de drop
+    effectiveRefs.current.forEach((ref, index) => {
+      if (!ref || !ref.current) return;
+
+      const element = ref.current;
+
+      // Événements de drag over/enter/leave pour les effets visuels
+      element.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (activeDropZone !== index) {
+          setActiveDropZone(index);
+          addDropzonePulseEffect(element, true);
+        }
+      });
+
+      element.addEventListener('dragleave', () => {
+        addDropzonePulseEffect(element, false);
+        setActiveDropZone(null);
+      });
+
+      element.addEventListener('drop', (e) => {
+        e.preventDefault();
+        addDropzonePulseEffect(element, false);
+        setActiveDropZone(null);
+
+        // L'effet d'apparition pour la nouvelle tâche sera géré par l'observateur de mutation
+      });
     });
 
     return () => {
@@ -177,152 +279,162 @@ export const TaskBoard = ({
         if (draggable) draggable.destroy();
       });
     };
-  }, [effectiveRefs, externalTasks, dropZones, dropZoneRefs]);
+  }, [effectiveRefs, externalTasks, dropZones, dropZoneRefs, activeDropZone]);
 
   return (
     <>
-      <div className="flex w-full space-x-4 backlogs taskboard-container">
-        {dropZones.map((zone, index) => {
-          // S'assurer que les refs sont initialisées
-          if (!effectiveRefs.current[index]) {
-            effectiveRefs.current[index] = React.createRef();
-          }
+      <div className="taskboard-container-wrapper">
+        <div className="taskboard-header">
+          <h2 className="taskboard-title">Taskboard</h2>
 
-          const zoneTasks = externalTasks.filter(task => {
+          {onCreateTask && (
+            <Button
+              onClick={onCreateTask}
+              className="task-create-button"
+            >
+              <Plus className="h-5.5 w-5.5" strokeWidth={2.5} />
+              <span>Nouvelle tâche</span>
+            </Button>
+          )}
+        </div>
 
-            // Stratégie de récupération du statusId
-            const extractStatusId = () => {
-              // Vérifier dans différentes sources possibles
-              if (task.statusId) return task.statusId.toString();
-              if (task.extendedProps?.statusId) return task.extendedProps.statusId.toString();
-              if (task.status) return task.status.toString();
-
-              // Valeur par défaut si aucun statusId trouvé
-              return null;
-            };
-
-            const taskStatusId = extractStatusId();
-
-            // Vérifier si c'est un congé 
-            const isConge =
-              task.isConge === true ||
-              task.extendedProps?.isConge === true ||
-              task.title === 'CONGE';
-
-            // Si c'est un congé et que le tableau courant est "En cours" (statusId === '2'),
-            // alors ne pas inclure cette tâche
-            if (isConge) {
-              return false;
+        <div className="flex w-full space-x-4 backlogs taskboard-container">
+          {dropZones.map((zone, index) => {
+            // S'assurer que les refs sont initialisées
+            if (!effectiveRefs.current[index]) {
+              effectiveRefs.current[index] = React.createRef();
             }
 
-            return taskStatusId === zone.statusId;
-          });
+            const zoneTasks = externalTasks.filter(task => {
+              // Stratégie de récupération du statusId
+              const extractStatusId = () => {
+                // Vérifier dans différentes sources possibles
+                if (task.statusId) return task.statusId.toString();
+                if (task.extendedProps?.statusId) return task.extendedProps.statusId.toString();
+                if (task.status) return task.status.toString();
 
-          const isInProgressZone = zone.statusId === '2';
+                // Valeur par défaut si aucun statusId trouvé
+                return null;
+              };
 
-          return (
-            <div
-              key={zone.id}
-              ref={effectiveRefs.current[index]}
-              className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
-              data-status-id={zone.statusId}
-              data-zone-id={zone.id}
-              data-dropzone-id={zone.id}
-            >
-              <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
-                {zone.title} {isInProgressZone}
-              </h3>
-              {zoneTasks.map(task => {
+              const taskStatusId = extractStatusId();
 
-                // Vérifier si c'est un congé
-                const isConge =
-                  task.isConge === true ||
-                  task.extendedProps?.isConge === true ||
-                  task.title === 'CONGE';
+              // Vérifier si c'est un congé 
+              const isConge =
+                task.isConge === true ||
+                task.extendedProps?.isConge === true ||
+                task.title === 'CONGE';
 
-                return (
-                  <div
-                    key={task.id}
-                    data-task-id={task.id}
-                    className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white border rounded hover:bg-gray-50 relative`}
-                    data-is-conge={isConge ? 'true' : 'false'}
-                    onClick={() => handleExternalTaskClick && handleExternalTaskClick(task)}
-                  >
-                    {/* Titre affiché pour toutes les tâches */}
-                    <div className="font-medium">{task.title}</div>
+              // Si c'est un congé et que le tableau courant est "En cours" (statusId === '2'),
+              // alors ne pas inclure cette tâche
+              if (isConge) {
+                return false;
+              }
 
-                    {/* Description affichée pour toutes les tâches si elle existe */}
-                    {(task.description || task.extendedProps?.description) && (
-                      <div className="text-xs text-gray-500 mt-1 line-clamp-2">
-                        {task.description || task.extendedProps?.description}
-                      </div>
-                    )}
+              return taskStatusId === zone.statusId;
+            });
 
-                    {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
-                    {isInProgressZone && (
-                      <>
-                        {task.resourceId && (
-                          <div className="text-xs text-blue-600 mt-1">
-                            <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
+            const isInProgressZone = zone.statusId === '2';
+
+            return (
+              <div
+                key={zone.id}
+                ref={effectiveRefs.current[index]}
+                className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
+                data-status-id={zone.statusId}
+                data-zone-id={zone.id}
+                data-dropzone-id={zone.id}
+              >
+                <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
+                  {zone.title}
+                </h3>
+                {zoneTasks.map(task => {
+                  // Vérifier si c'est un congé
+                  const isConge =
+                    task.isConge === true ||
+                    task.extendedProps?.isConge === true ||
+                    task.title === 'CONGE';
+
+                  return (
+                    <div
+                      key={task.id}
+                      data-task-id={task.id}
+                      className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white border rounded hover:bg-gray-50 relative`}
+                      data-is-conge={isConge ? 'true' : 'false'}
+                      onClick={() => handleExternalTaskClick && handleExternalTaskClick(task)}
+                    >
+                      {/* Titre affiché pour toutes les tâches */}
+                      <div className="font-medium">{task.title}</div>
+
+                      {/* Description affichée pour toutes les tâches si elle existe */}
+                      {(task.description || task.extendedProps?.description) && (
+                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {task.description || task.extendedProps?.description}
+                        </div>
+                      )}
+
+                      {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
+                      {isInProgressZone && (
+                        <>
+                          {task.resourceId && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
+                            </div>
+                          )}
+
+                          {/* Dates de la tâche */}
+                          <div className="text-xs text-gray-600 mt-1">
+                            <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
+                            <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
                           </div>
+                        </>
+                      )}
+
+                      {/* Barre d'actions avec boutons de déplacement et suppression */}
+                      <div className="flex justify-end mt-2 space-x-2">
+                        {/* Flèche gauche - visible sauf pour le premier taskboard */}
+                        {index > 0 && (
+                          <button
+                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            onClick={(e) => moveTaskLeft(e, task)}
+                            title="Déplacer vers la gauche"
+                          >
+                            <ArrowLeft size={16} />
+                          </button>
                         )}
 
-                        {/* Dates de la tâche */}
-                        <div className="text-xs text-gray-600 mt-1">
-                          <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
-                          <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Barre d'actions avec boutons de déplacement et suppression */}
-                    <div className="flex justify-end mt-2 space-x-2">
-                      {/* Flèche gauche - visible sauf pour le premier taskboard */}
-                      {index > 0 && (
+                        {/* Bouton de suppression */}
                         <button
-                          className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
-                          onClick={(e) => moveTaskLeft(e, task)}
-                          title="Déplacer vers la gauche"
+                          className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
+                          onClick={(e) => openDeleteModal(e, task)}
+                          title="Supprimer la tâche"
                         >
-                          <ArrowLeft size={16} />
+                          <Trash2 size={16} />
                         </button>
-                      )}
 
-                      {/* Bouton de suppression */}
-                      <button
-                        className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
-                        onClick={(e) => openDeleteModal(e, task)}
-                        title="Supprimer la tâche"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-
-                      {/* Flèche droite - visible sauf pour le dernier taskboard */}
-                      {index < dropZones.length - 1 && (
-                        <button
-                          className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
-                          onClick={(e) => moveTaskRight(e, task)}
-                          title="Déplacer vers la droite"
-                        >
-                          <ArrowRight size={16} />
-                        </button>
-                      )}
-
+                        {/* Flèche droite - visible sauf pour le dernier taskboard */}
+                        {index < dropZones.length - 1 && (
+                          <button
+                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            onClick={(e) => moveTaskRight(e, task)}
+                            title="Déplacer vers la droite"
+                          >
+                            <ArrowRight size={16} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-
-
+                  );
+                })}
+                {zoneTasks.length === 0 && (
+                  <div className="text-gray-400 text-center p-2">
+                    Pas de tâches
                   </div>
-
-                );
-              })}
-              {zoneTasks.length === 0 && (
-                <div className="text-gray-400 text-center p-2">
-                  Pas de tâches
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Modal de confirmation de suppression */}
