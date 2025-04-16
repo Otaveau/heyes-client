@@ -6,10 +6,10 @@ import { Button } from '../ui/button';
 
 const addTaskAppearEffect = (taskElement) => {
   if (!taskElement) return;
-  
+
   // Ajouter la classe pour l'animation
   taskElement.classList.add('task-newly-added');
-  
+
   // Supprimer la classe après l'animation pour éviter les problèmes de style
   setTimeout(() => {
     taskElement.classList.remove('task-newly-added');
@@ -19,7 +19,7 @@ const addTaskAppearEffect = (taskElement) => {
 // 3. Fonction pour gérer l'effet de pulsation sur la zone de drop
 const addDropzonePulseEffect = (zoneElement, isActive) => {
   if (!zoneElement) return;
-  
+
   if (isActive) {
     zoneElement.classList.add('dropzone-active', 'dropzone-pulse');
   } else {
@@ -142,7 +142,7 @@ export const TaskBoard = ({
     // Pour chaque dropzone, configurer un observateur de mutation
     effectiveRefs.current.forEach((ref, index) => {
       if (!ref || !ref.current) return;
-      
+
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -154,10 +154,10 @@ export const TaskBoard = ({
           }
         });
       });
-      
+
       // Observer les changements d'enfants dans la zone
       observer.observe(ref.current, { childList: true });
-      
+
       // Nettoyer l'observateur lors du démontage
       return () => observer.disconnect();
     });
@@ -247,9 +247,9 @@ export const TaskBoard = ({
     // Configuration des événements pour les effets visuels sur les zones de drop
     effectiveRefs.current.forEach((ref, index) => {
       if (!ref || !ref.current) return;
-      
+
       const element = ref.current;
-      
+
       // Événements de drag over/enter/leave pour les effets visuels
       element.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -258,17 +258,17 @@ export const TaskBoard = ({
           addDropzonePulseEffect(element, true);
         }
       });
-      
+
       element.addEventListener('dragleave', () => {
         addDropzonePulseEffect(element, false);
         setActiveDropZone(null);
       });
-      
+
       element.addEventListener('drop', (e) => {
         e.preventDefault();
         addDropzonePulseEffect(element, false);
         setActiveDropZone(null);
-        
+
         // L'effet d'apparition pour la nouvelle tâche sera géré par l'observateur de mutation
       });
     });
@@ -283,22 +283,21 @@ export const TaskBoard = ({
 
   return (
     <>
-      <div className="bg-white">
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Taskboard</h2>
-          
-          {/* Bouton de création de tâche */}
+      <div className="taskboard-container-wrapper">
+        <div className="taskboard-header">
+          <h2 className="taskboard-title">Taskboard</h2>
+
           {onCreateTask && (
-            <Button 
+            <Button
               onClick={onCreateTask}
-              className="bg-gradient-to-b from-white to-gray-200 text-gray-800 font-bold py-2.5 px-5 rounded-lg shadow-lg flex items-center transition-all duration-200 transform hover:scale-105 border border-gray-300 hover:shadow-xl"
+              className="task-create-button"
             >
-              <Plus className="h-6 w-6 mr-2 text-gray-700" />
-              Nouvelle tâche
+              <Plus className="h-5.5 w-5.5" strokeWidth={2.5} />
+              <span>Nouvelle tâche</span>
             </Button>
           )}
         </div>
-        
+
         <div className="flex w-full space-x-4 backlogs taskboard-container">
           {dropZones.map((zone, index) => {
             // S'assurer que les refs sont initialisées

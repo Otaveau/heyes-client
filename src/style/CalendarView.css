@@ -491,3 +491,307 @@ button.fc-today-button:hover {
 .dropzone-pulse {
   animation: pulseTarget 1.5s infinite;
 }
+
+
+/* Styles améliorés pour le bouton Nouvelle tâche */
+.task-create-button {
+  background: linear-gradient(to bottom right, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25), 0 2px 4px rgba(37, 99, 235, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(37, 99, 235, 0.3), 0 2px 4px rgba(37, 99, 235, 0.15);
+  background: linear-gradient(to bottom right, #4f8df9, #2c6bed);
+}
+
+.task-create-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+}
+
+.task-create-button svg {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+/* Ajouter un effet de pulsation subtil */
+.task-create-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.5s;
+}
+
+.task-create-button:hover::after {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* Styles améliorés pour l'en-tête du taskboard */
+
+/* Style du conteneur d'en-tête */
+.taskboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(to right, #f9fafb, #f3f4f6);
+  border-bottom: 1px solid #e5e7eb;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  margin-bottom: 0; /* Supprime l'espace entre l'en-tête et le contenu */
+}
+
+/* Style du titre du taskboard */
+.taskboard-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  position: relative;
+  padding-bottom: 4px;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Ligne décorative sous le titre */
+.taskboard-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(to right, #3b82f6, #93c5fd);
+  border-radius: 2px;
+}
+
+/* Style du bouton de création de tâche */
+.task-create-button {
+  background: linear-gradient(to bottom right, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3), 0 2px 4px rgba(37, 99, 235, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+}
+
+.task-create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4), 0 3px 6px rgba(37, 99, 235, 0.2);
+  background: linear-gradient(to bottom right, #4f8df9, #2c6bed);
+}
+
+.task-create-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+}
+
+.task-create-button svg {
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+/* Effet de pulsation subtile sur le bouton */
+.task-create-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.5s;
+}
+
+.task-create-button:hover::after {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* Style pour le conteneur global du taskboard */
+.taskboard-container-wrapper {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden; /* Pour que les coins arrondis soient visibles */
+  margin: 20px 0;
+}
+
+/* Ajustement de l'espacement du contenu des taskboards */
+.taskboard-container {
+  padding: 20px;
+  background-color: #fafafa;
+}
+
+/* Styles pour aligner le header avec les taskboards */
+
+/* Style du conteneur global du taskboard */
+.taskboard-container-wrapper {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+/* Style du conteneur d'en-tête */
+.taskboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(to right, #f9fafb, #f3f4f6);
+  border-bottom: 1px solid #e5e7eb;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  margin-bottom: 0;
+}
+
+/* Style du titre du taskboard */
+.taskboard-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  position: relative;
+  padding-bottom: 4px;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Ligne décorative sous le titre */
+.taskboard-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(to right, #3b82f6, #93c5fd);
+  border-radius: 2px;
+}
+
+/* Style du bouton de création de tâche */
+.task-create-button {
+  background: linear-gradient(to bottom right, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3), 0 2px 4px rgba(37, 99, 235, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+}
+
+/* Conteneur des taskboards - aligné avec le header */
+.taskboard-container {
+  display: flex;
+  gap: 16px; /* Espacement uniforme entre les taskboards */
+  padding: 20px 24px; /* Même padding horizontal que le header */
+  background-color: #fafafa;
+}
+
+/* Style pour chaque taskboard individuel */
+.taskboard-column {
+  flex: 1;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-out;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style pour les titres de taskboards */
+.taskboard-column h3 {
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  color: #4b5563;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Style pour le taskboard "En cours" */
+.taskboard-column.in-progress {
+  background-color: #ebf5ff;
+}
+
+.taskboard-column.in-progress h3 {
+  color: #2563eb;
+  border-bottom-color: #93c5fd;
+}
