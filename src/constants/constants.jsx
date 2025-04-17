@@ -60,3 +60,31 @@ export const CONGE_EVENT_STYLE = `
   color: #4b5563;
   font-weight: 600;
 `;
+
+// Constantes pour les identifiants et configurations
+export const WIP_STATUS_ID = '2'; // Status ID qui ne doit pas être ciblé par le drag and drop
+export const GHOST_OFFSET = 15; // Décalage du fantôme par rapport au curseur
+export const ANIMATION_DELAYS = {
+  SCALE_RESET: 50,
+  MOUSE_UP_CLEANUP: 100,
+  PLACEHOLDER_FADE_IN: 50,
+  GHOST_FADE_OUT: 180,
+  FINAL_CLEANUP: 200
+};
+
+// Sélecteurs CSS
+export const SELECTORS = {
+  TASKBOARD_CONTAINER: '.taskboard-container',
+};
+
+// Classes CSS
+export const CSS_CLASSES = {
+  TASKBOARD_HIGHLIGHT: 'taskboard-highlight',
+  TASKBOARD_HIGHLIGHT_INTENSE: 'taskboard-highlight-intense',
+  DROPZONE_ACTIVE: 'dropzone-active',
+  DROPZONE_DISABLED: 'dropzone-disabled',
+  POTENTIAL_DROP_TARGET: 'potential-drop-target',
+  ACTIVE_DROP_TARGET: 'active-drop-target',
+  GHOST_ELEMENT: 'task-ghost-element',
+  TEMPORARY_PLACEHOLDER: 'fc-event temporary-task-placeholder'
+};
