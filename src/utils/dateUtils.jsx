@@ -34,6 +34,25 @@ export const navigateToToday = (calendarRef, selectedYear, setSelectedYear, navi
   }
 }
 
+/**
+ * Formate une date en chaîne YYYY-MM-DD pour les champs input[type="date"]
+ */
+export const formatDateForInput = (date) => {
+  if (!date) return '';
+
+  const d = new Date(date);
+
+  // Vérifier si la date est valide
+  if (isNaN(d.getTime())) return '';
+
+  // Utiliser les méthodes UTC pour éviter les décalages de fuseau horaire
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 export const getInclusiveEndDate = (task) => {
   // Si la propriété inclusiveEndDate est disponible dans extendedProps, l'utiliser
   if (task.extendedProps?.inclusiveEndDate) {

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { X, Check, Pipette } from 'lucide-react';
+import { X, Check} from 'lucide-react';
 
 // Composant pour le sélecteur de couleur à spectre complet
 const ColorSpectrum = ({ onChange, currentColor }) => {
@@ -69,7 +69,7 @@ const ColorSpectrum = ({ onChange, currentColor }) => {
       onChange(initialColor);
     }, 50);
     
-  }, []); // Exécuter une seule fois à l'initialisation
+  }, [onChange]); // Exécuter une seule fois à l'initialisation
   
   // Obtenir la couleur à un point spécifique du canvas
   const getColorAtPoint = (x, y) => {

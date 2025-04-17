@@ -5,6 +5,7 @@ import { createTask, updateTask, deleteTask } from '../services/api/taskService'
 import { hasValidEventBoundaries } from '../utils/dateUtils';
 
 export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holidays) => {
+  
   // Fonction utilitaire pour convertir une date inclusive en date exclusive
   const getExclusiveEndDate = useCallback((inclusiveDate) => {
     if (!inclusiveDate) return null;
@@ -25,10 +26,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
     );
   }, [setTasks]);
 
-  // Mise à jour d'une tâche avec appel API
-  // Modification de handleTaskUpdate dans useTaskMutationHandlers.js
-  // Cette modification garantit que handleTaskUpdate respecte les dates null
-
+  // Mise à jour d'une tâche (avec appel API)
   const handleTaskUpdate = useCallback(async (taskId, updates, options = {}) => {
     const { revertFunction = null, successMessage = null, skipApiCall = false } = options;
     try {
@@ -113,79 +111,163 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
 
 
   // Soumission du formulaire de tâche (création/modification)
-  const handleTaskSubmit = useCallback(async (formData) => {
-    if (!formData?.title) {
-      toast.error(ERROR_MESSAGES.TITLE_REQUIRED, TOAST_CONFIG);
-      return;
+ // Version améliorée qui combine les deux méthodes
+ const handleTaskSubmit = useCallback(async (formData, options = {}) => {
+  const { taskboardDestination = null } = options;
+  
+  try {
+    setCalendarState(prev => ({ ...prev, isProcessing: true }));
+
+    // Si la tâche vient d'être déplacée vers le taskboard "En cours" (statusId '2')
+    if (taskboardDestination === '2') {
+      // Vérifier si un propriétaire est assigné et si des dates sont définies
+      const hasOwner = Boolean(formData.resourceId || formData.owner_id);
+      const hasDates = Boolean(formData.start || formData.start_date);
+
+      // Si les conditions ne sont pas remplies pour être "En cours"
+      if (!hasOwner || !hasDates) {
+        // Rechercher la tâche originale pour obtenir son statusId précédent
+        const originalTask = tasks.find(task => task.id.toString() === formData.id.toString());
+        const originalStatusId = originalTask?.statusId || '1'; // Fallback à 'À faire' si non trouvé
+
+        // Utiliser le statut d'origine si différent de '2'
+        const targetStatusId = originalStatusId === '2' ? '1' : originalStatusId;
+
+        // Préparer les mises à jour sans dates/propriétaire
+        const updates = {
+          ...formData,
+          start: null,
+          end: null,
+          start_date: null,
+          end_date: null,
+          resourceId: null,
+          owner_id: null,
+          statusId: targetStatusId,
+          description: formData.description,
+          extendedProps: {
+            ...(formData.extendedProps || {}),
+            statusId: targetStatusId,
+            description: formData.description
+          }
+        };
+
+        // Utiliser handleTaskUpdate pour mettre à jour
+        await updateTask(formData.id, updates);
+        updateTaskStatus(formData.id, updates);
+        
+        toast.warning("Tâche non modifiée - Un propriétaire et des dates sont requis pour les tâches en cours", TOAST_CONFIG);
+        return updates;
+      } 
+      
+      // Si les conditions sont remplies, mettre à jour vers le statut '2'
+      formData = {
+        ...formData,
+        statusId: '2',
+        extendedProps: {
+          ...(formData.extendedProps || {}),
+          statusId: '2',
+          description: formData.description
+        }
+      };
     }
 
+    // Validation du titre
+    if (!formData?.title) {
+      toast.error(ERROR_MESSAGES.TITLE_REQUIRED, TOAST_CONFIG);
+      return null;
+    }
+
+    // Préparation des dates
     const startDate = formData.startDate || formData.start;
     const inclusiveEndDate = formData.endDate || formData.end;
+
+    // Calculer la date exclusive (pour FullCalendar)
+    let exclusiveEndDate = null;
+    if (inclusiveEndDate) {
+      exclusiveEndDate = getExclusiveEndDate(inclusiveEndDate);
+    }
 
     // Validation des dates - utiliser la date inclusive pour validation
     if ((startDate && inclusiveEndDate) && !hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
       toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
-      return;
+      return null;
     }
 
-    try {
-      setCalendarState(prev => ({ ...prev, isProcessing: true }));
+    // Déterminer si c'est une création ou une modification
+    const isNewTask = !formData.id;
+    const isConge = formData.isConge === true;
 
-      const taskData = {
-        title: formData.title.trim(),
-        description: (formData.description || '').trim(),
-        start: startDate,
-        end: formData.extendedProps?.inclusiveEndDate, // Date exclusive pour FullCalendar
-        exclusiveEndDate: formData.exclusiveEndDate,
-        resourceId: formData.resourceId ? parseInt(formData.resourceId, 10) : null,
+    // Préparer les données de la tâche
+    const taskData = {
+      ...formData,
+      title: (formData.title || '').trim(),
+      description: (formData.description || '').trim(),
+      start: startDate,
+      end: exclusiveEndDate,
+      exclusiveEndDate: exclusiveEndDate,
+      startDate: startDate,
+      endDate: inclusiveEndDate,
+      extendedProps: {
+        ...(formData.extendedProps || {}),
+        inclusiveEndDate: inclusiveEndDate,
+        exclusiveEndDate: exclusiveEndDate,
         statusId: formData.statusId,
-        extendedProps: {
-          ...(formData.extendedProps || {}),
-          inclusiveEndDate: inclusiveEndDate, // Stocker la date inclusive dans extendedProps
-          statusId: formData.statusId
-        }
+        isConge: isConge,
+        description: formData.description
+      }
+    };
+
+    let updatedTask;
+    
+    // Cas de mise à jour d'une tâche existante
+    if (!isNewTask) {
+      updateTaskStatus(formData.id, taskData);
+      updatedTask = await updateTask(formData.id, taskData);
+      toast.success('Tâche mise à jour', TOAST_CONFIG);
+    }
+    // Cas de création d'une nouvelle tâche
+    else {
+      updatedTask = await createTask(taskData);
+      const newTask = {
+        id: updatedTask.id,
+        ...taskData,
+        allDay: true
       };
 
-      const taskId = formData.id;
-
-      let updatedTask;
-      // Cas de mise à jour d'une tâche existante
-      if (taskId) {
-        updateTaskStatus(taskId, taskData);
-        updatedTask = await updateTask(taskId, taskData);
-        toast.success('Tâche mise à jour', TOAST_CONFIG);
-      }
-      // Cas de création d'une nouvelle tâche
-      else {
-        updatedTask = await createTask(taskData);
-        const newTask = {
-          id: updatedTask.id,
-          ...taskData,
-          allDay: true
-        };
-
-        setTasks(prevTasks => [...prevTasks, newTask]);
-
-        toast.success('Tâche créée', TOAST_CONFIG);
-      }
-
-      // Terminer et réinitialiser
-      setCalendarState(prev => ({
-        ...prev,
-        isFormOpen: false,
-        selectedTask: null,
-      }));
-
-      return updatedTask;
-    } catch (error) {
-      toast.error(formData.id ? ERROR_MESSAGES.UPDATE_FAILED : ERROR_MESSAGES.CREATE_FAILED, TOAST_CONFIG);
-      console.error('Erreur lors de la soumission de la tâche:', error);
-      return null;
-    } finally {
-      setCalendarState(prev => ({ ...prev, isProcessing: false }));
+      setTasks(prevTasks => [...prevTasks, newTask]);
+      toast.success('Tâche créée', TOAST_CONFIG);
     }
-  }, [holidays, setCalendarState, updateTaskStatus, setTasks]);
 
+    // Réinitialiser l'état du formulaire
+    setCalendarState(prev => ({
+      ...prev,
+      isFormOpen: false,
+      selectedTask: null,
+      selectedDates: null,
+      taskboardDestination: null,
+      taskOriginId: null
+    }));
+
+    return updatedTask;
+  } catch (error) {
+    console.error('Erreur lors de la soumission de la tâche:', error);
+    toast.error(formData.id ? ERROR_MESSAGES.UPDATE_FAILED : ERROR_MESSAGES.CREATE_FAILED, TOAST_CONFIG);
+    
+    // S'assurer que le formulaire est fermé même en cas d'erreur
+    setCalendarState(prev => ({
+      ...prev,
+      isFormOpen: false,
+      selectedTask: null,
+      selectedDates: null,
+      taskboardDestination: null,
+      taskOriginId: null
+    }));
+    
+    return null;
+  } finally {
+    setCalendarState(prev => ({ ...prev, isProcessing: false }));
+  }
+}, [holidays, setCalendarState, updateTaskStatus, setTasks, tasks, getExclusiveEndDate]);
   // Suppression d'une tâche
   const handleDeleteTask = useCallback(async (taskId) => {
     try {
