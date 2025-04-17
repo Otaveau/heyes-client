@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CalendarView } from './components/calendar/CalendarView';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import OwnerManagement from './components/manage/OwnerManagement';
+import OwnerManagement from './components/manage/owner/OwnerManagement';
 import TeamManagement from './components/manage/TeamManagement';
 import Navigation from './components/common/Navigation';
 import { AuthProvider, useAuth } from './context/AuthContext';
