@@ -3,6 +3,30 @@
  * Ce module gère les interactions sans injecter de styles CSS
  */
 
+// Fonction pour gérer l'effet d'apparition de la tâche
+export const addTaskAppearEffect = (taskElement) => {
+  if (!taskElement) return;
+
+  // Ajouter la classe pour l'animation
+  taskElement.classList.add('task-newly-added');
+
+  // Supprimer la classe après l'animation pour éviter les problèmes de style
+  setTimeout(() => {
+    taskElement.classList.remove('task-newly-added');
+  }, 800); // Légèrement plus long que la durée de l'animation
+};
+
+// Fonction pour gérer l'effet de pulsation sur la zone de drop
+export const addDropzonePulseEffect = (zoneElement, isActive) => {
+  if (!zoneElement) return;
+
+  if (isActive) {
+    zoneElement.classList.add('dropzone-active', 'dropzone-pulse');
+  } else {
+    zoneElement.classList.remove('dropzone-active', 'dropzone-pulse');
+  }
+};
+
 /**
  * Met en surbrillance le tableau de tâches (TaskBoard)
  * Utilise les classes CSS définies dans le fichier CSS principal

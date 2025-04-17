@@ -1,3 +1,5 @@
+import { ERROR_MESSAGES } from '../constants/constants';
+
 /**
  * Classe utilitaire pour la standardisation et la gestion des dates
  * 
@@ -33,6 +35,20 @@ export const navigateToToday = (calendarRef, selectedYear, setSelectedYear, navi
     }, 100);
   }
 }
+
+/**
+ * Formate une date pour les taskCards
+ */
+export const formatDateTaskCard = (dateString) => {
+  if (!dateString) return null;
+  try {
+    return new Date(dateString).toLocaleDateString();
+  } catch (error) {
+    console.error(ERROR_MESSAGES.DATE_FORMAT, error);
+    return null;
+  }
+};
+
 
 /**
  * Formate une date en chaîne YYYY-MM-DD pour les champs input[type="date"]
