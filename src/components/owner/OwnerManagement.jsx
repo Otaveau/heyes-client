@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo  } from 'react';
-import { fetchOwners, deleteOwner, createOwner, updateOwner } from '../../../services/api/ownerService';
-import { fetchTeams } from '../../../services/api/teamService';
-import ConfirmationModal from '../../ui/confirmationModal';
+import { fetchOwners, deleteOwner, createOwner, updateOwner } from '../../services/api/ownerService';
+import { fetchTeams } from '../../services/api/teamService';
+import ConfirmationModal from '../ui/confirmationModal';
 import { OwnerList } from './OwnerList';
 import { OwnerDetails } from './OwnerDetails';
 import { OwnerForm } from './OwnerForm';

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { Button } from '../../ui/button';
-import { Card } from '../../ui/card';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import { Save } from 'lucide-react';
 import { OwnerForm } from './OwnerForm';
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback} from 'react';
-import { Button } from '../../ui/button';
-import { Input } from '../../ui/input';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import {  Plus, Loader2, Save, X } from 'lucide-react';
-import { getContrastTextColor } from '../../../utils/colorUtils';
+import { getContrastTextColor } from '../../utils/colorUtils';
 
 export const OwnerForm = ({ 
     owner, 

@@ -1,6 +1,6 @@
 import React, { useCallback} from 'react';
-import { Button } from '../../ui/button';
-import { Card } from '../../ui/card';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import { Trash2, Loader2, } from 'lucide-react';
 
 
