@@ -1,3 +1,5 @@
+import { DEFAULT_COLOR } from '../constants/constants';
+
 // Fonction pour générer une variation de couleur à partir d'une couleur de base
 export const generateTaskColorFromBaseColor = (baseColor, resourceId) => {
   try {
@@ -54,6 +56,68 @@ export const generateTaskColorFromBaseColor = (baseColor, resourceId) => {
     return '#9CA3AF'; // Couleur par défaut en cas d'erreur
   }
 };
+
+// Fonction pour créer la map des couleurs des membres
+export const createMemberColorMap = (resources) => {
+  const colorMap = {};
+  const teamColorMap = {};
+
+  // 1. Identifier les teams et leurs couleurs
+  resources.forEach(resource => {
+    let teamId = resource.id;
+    let numericId = teamId;
+
+    if (typeof teamId === 'string' && teamId.startsWith('team_')) {
+      numericId = teamId.replace('team_', '');
+    }
+
+    const teamColor = resource.extendedProps?.teamColor;
+
+    if (teamColor) {
+      teamColorMap[teamId] = teamColor;
+      teamColorMap[numericId] = teamColor;
+      teamColorMap[String(numericId)] = teamColor;
+
+      if (resource.extendedProps?.teamId) {
+        teamColorMap[resource.extendedProps.teamId] = teamColor;
+        teamColorMap[String(resource.extendedProps.teamId)] = teamColor;
+      }
+    }
+  });
+
+  // 2. Attribuer des couleurs aux owners en fonction de leur team
+  resources.forEach(resource => {
+    let teamId = resource.extendedProps?.teamId || resource.extendedProps?.team_id;
+
+    // Si pas trouvé et qu'il y a un parentId, l'utiliser
+    if (!teamId && resource.parentId) {
+      teamId = resource.parentId;
+
+      if (typeof teamId === 'string' && teamId.startsWith('team_')) {
+        const numericId = teamId.replace('team_', '');
+        if (teamColorMap[numericId]) {
+          teamId = numericId;
+        }
+      }
+    }
+
+    if (!teamId) {
+      colorMap[resource.id] = DEFAULT_COLOR;
+      return;
+    }
+
+    // Chercher la couleur de team
+    const teamColor = teamColorMap[teamId] || teamColorMap[String(teamId)];
+
+    if (teamColor) {
+      colorMap[resource.id] = generateTaskColorFromBaseColor(teamColor, resource.id);
+    } else {
+      colorMap[resource.id] = DEFAULT_COLOR;
+    }
+  });
+
+  return colorMap;
+}
 
 // Convertir HEX en RGB
 function hexToRgb(hex) {

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
 import { createTask, updateTask, deleteTask } from '../services/api/taskService';
-import { DateUtils } from '../utils/DateUtils';
+import { hasValidEventBoundaries } from '../utils/DateUtils';
 
 export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holidays) => {
   // Fonction utilitaire pour convertir une date inclusive en date exclusive
@@ -123,7 +123,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
     const inclusiveEndDate = formData.endDate || formData.end;
 
     // Validation des dates - utiliser la date inclusive pour validation
-    if ((startDate && inclusiveEndDate) && !DateUtils.hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
+    if ((startDate && inclusiveEndDate) && !hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
       toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
       return;
     }

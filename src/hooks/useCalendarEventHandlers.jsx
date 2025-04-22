@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import { DateUtils } from '../utils/DateUtils';
+import { hasValidEventBoundaries } from '../utils/DateUtils';
 
 export const useCalendarEventHandlers = (
   setCalendarState,
@@ -68,7 +68,7 @@ export const useCalendarEventHandlers = (
     inclusiveEndDate.setDate(inclusiveEndDate.getDate() - 1);
 
     // Validation des dates
-    if (!DateUtils.hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
+    if (!hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
       dropInfo.revert();
       toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
       return;
@@ -127,7 +127,7 @@ export const useCalendarEventHandlers = (
     inclusiveEndDate.setDate(inclusiveEndDate.getDate() - 1);
 
     // Validation des dates avec la date de fin inclusive
-    if (!DateUtils.hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
+    if (!hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
       info.revert();
       toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
       return;

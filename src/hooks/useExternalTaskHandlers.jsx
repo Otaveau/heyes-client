@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import { DateUtils } from '../utils/DateUtils';
+import { isHolidayOrWeekend } from '../utils/DateUtils';
 
 
 export const useExternalTaskHandlers = (
@@ -441,7 +441,7 @@ export const useExternalTaskHandlers = (
     const exclusiveEndDate = new Date(startDate.getTime() + 86400000);
 
     // Vérifier si c'est un jour férié ou un weekend
-    if (DateUtils.isHolidayOrWeekend(startDate, holidays)) {
+    if (isHolidayOrWeekend(startDate, holidays)) {
       toast.warning('Impossible de planifier sur un jour non ouvré', TOAST_CONFIG);
       if (info.draggedEl) {
         info.draggedEl.style.opacity = '1';

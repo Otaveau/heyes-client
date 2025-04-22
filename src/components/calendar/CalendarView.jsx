@@ -28,8 +28,8 @@ export const CalendarView = () => {
 
   // Zones de dépôt pour le TaskBoard
   const dropZones = useMemo(() => {
-     // Trier les statuses par leur statusId
-     const sortedStatuses = [...statuses].sort((a, b) => {
+    // Trier les statuses par leur statusId
+    const sortedStatuses = [...statuses].sort((a, b) => {
       const idA = parseInt(a.statusId, 10);
       const idB = parseInt(b.statusId, 10);
       return idA - idB;
@@ -80,6 +80,7 @@ export const CalendarView = () => {
       console.error(`Tâche avec l'ID ${taskId} non trouvée`);
       return;
     }
+
     if (newStatusId === '2') {
       // Ouvrir le formulaire pour modifier la tâche
       setCalendarState(prev => ({
@@ -98,8 +99,6 @@ export const CalendarView = () => {
         statusId: newStatusId,
         extendedProps: {
           ...taskToMove.extendedProps,
-          inclusiveEndDate: null,
-          exclusiveEndDate: null,
           statusId: newStatusId
         }
       };
@@ -114,13 +113,13 @@ export const CalendarView = () => {
         updates.owner_id = null;
       }
 
-      // Utiliser handleTaskUpdate du hook pour mise à jour ET persistance en base de données
+      // Utiliser handleTaskUpdate du hook
       taskHandlers.handleTaskUpdate(
         taskId,
         updates,
         {
           successMessage: `Tâche déplacée vers ${dropZones.find(zone => zone.statusId === newStatusId)?.title || 'nouveau statut'}`,
-          skipApiCall: false // S'assurer que l'appel API est effectué
+          skipApiCall: false
         }
       );
     }
@@ -129,162 +128,14 @@ export const CalendarView = () => {
   // Gérer la soumission du formulaire
   const handleFormSubmit = async (updatedTask) => {
     try {
-      // Si la tâche provient d'un déplacement vers le taskboard '2'
-      if (calendarState.taskboardDestination === '2') {
-        // Vérifier si un propriétaire est assigné et si des dates sont définies
-        const hasOwner = Boolean(updatedTask.resourceId || updatedTask.owner_id);
-        const hasDates = Boolean(updatedTask.start || updatedTask.start_date);
+      // Passer l'information de destination si applicable
+      await taskHandlers.handleTaskSubmit(updatedTask, {
+        taskboardDestination: calendarState.taskboardDestination
+      });
 
-        if (!hasOwner || !hasDates) {
-          // Rechercher la tâche originale pour obtenir son statusId précédent
-          const originalTask = tasks.find(task => task.id.toString() === updatedTask.id.toString());
-          const originalStatusId = originalTask?.statusId || '1'; // Fallback à 'À faire' si non trouvé
-
-          // Utiliser le statut d'origine si différent de '2'
-          const targetStatusId = originalStatusId === '2' ? '1' : originalStatusId;
-
-          // Mettre à jour avec l'ancien statut et sans dates/propriétaire
-          updatedTask = {
-            ...updatedTask,
-            start: null,
-            end: null,
-            start_date: null,
-            end_date: null,
-            resourceId: null,
-            owner_id: null,
-            statusId: targetStatusId,
-            description: updatedTask.description,
-            extendedProps: {
-              ...updatedTask.extendedProps,
-              statusId: targetStatusId,
-              description: updatedTask.description
-            }
-          };
-
-          // Utiliser la méthode handleTaskUpdate du hook pour mise à jour et appel API
-          await taskHandlers.handleTaskUpdate(
-            updatedTask.id,
-            updatedTask,
-            {
-              successMessage: "Tâche non modifiée - Un propriétaire et des dates sont requis pour les tâches en cours",
-              skipApiCall: false // S'assurer que l'appel API est effectué
-            }
-          );
-        } else {
-          // Si les conditions sont remplies, mettre à jour vers le statut '2'
-          updatedTask = {
-            ...updatedTask,
-            statusId: '2',
-            extendedProps: {
-              ...updatedTask.extendedProps,
-              statusId: '2',
-              description: updatedTask.description
-            }
-          };
-
-          // Utiliser la méthode handleTaskUpdate du hook pour mise à jour et appel API
-          await taskHandlers.handleTaskUpdate(
-            updatedTask.id,
-            updatedTask,
-            {
-              successMessage: "Tâche mise à jour avec succès",
-              skipApiCall: false
-            }
-          );
-        }
-      } else {
-
-        // Préparer les dates inclusives et exclusives
-        const startDate = updatedTask.startDate || updatedTask.start;
-        const inclusiveEndDate = updatedTask.endDate || updatedTask.end;
-
-        // Calculer la date exclusive (pour FullCalendar)
-        let exclusiveEndDate = null;
-        if (inclusiveEndDate) {
-          // Créer une copie pour ne pas modifier l'original
-          if (typeof inclusiveEndDate === 'string') {
-            const dateObj = new Date(inclusiveEndDate);
-            dateObj.setDate(dateObj.getDate() + 1);
-            exclusiveEndDate = dateObj.toISOString().split('T')[0];
-          } else {
-            const dateObj = new Date(inclusiveEndDate);
-            dateObj.setDate(dateObj.getDate() + 1);
-            exclusiveEndDate = dateObj;
-          }
-        }
-
-        // Déterminer si c'est une création ou une modification
-        const isNewTask = !updatedTask.id;
-        const isConge = updatedTask.isConge === true;
-
-        if (isNewTask) {
-          // CAS DE CRÉATION
-          // Enrichir avec les dates inclusives/exclusives
-          const enrichedTask = {
-            ...updatedTask,
-            start: startDate,
-            end: exclusiveEndDate,
-            exclusiveEndDate: exclusiveEndDate,
-            startDate: startDate,
-            endDate: inclusiveEndDate,
-            description: updatedTask.description,
-            extendedProps: {
-              ...(updatedTask.extendedProps || {}),
-              inclusiveEndDate: inclusiveEndDate,
-              exclusiveEndDate: exclusiveEndDate,
-              statusId: updatedTask.statusId,
-              isConge: isConge,
-              description: updatedTask.description
-            }
-          };
-
-          // Pour les autres cas, utiliser le gestionnaire normal
-          await taskHandlers.handleTaskSubmit(enrichedTask);
-        } else {
-          // CAS DE MODIFICATION
-          // Enrichir avec les dates inclusives/exclusives
-          const enrichedTask = {
-            ...updatedTask,
-            start: startDate,
-            end: exclusiveEndDate,
-            exclusiveEndDate: exclusiveEndDate,
-            description: updatedTask.description,
-            extendedProps: {
-              ...(updatedTask.extendedProps || {}),
-              inclusiveEndDate: inclusiveEndDate,
-              exclusiveEndDate: exclusiveEndDate,
-              statusId: updatedTask.statusId,
-              isConge: isConge,
-              description: updatedTask.description,
-            }
-          };
-
-          // Pour les autres cas, utiliser le gestionnaire normal
-          await taskHandlers.handleTaskSubmit(enrichedTask);
-        }
-      }
-
-      // Réinitialiser l'état
-      setCalendarState(prev => ({
-        ...prev,
-        taskboardDestination: null,
-        taskOriginId: null,
-        isFormOpen: false,
-        selectedTask: null,
-        selectedDates: null
-      }));
+      // La réinitialisation de l'état est maintenant gérée dans le hook
     } catch (error) {
       console.error('Erreur dans handleFormSubmit:', error);
-
-      // S'assurer que le formulaire est fermé même en cas d'erreur
-      setCalendarState(prev => ({
-        ...prev,
-        isFormOpen: false,
-        taskboardDestination: null,
-        taskOriginId: null,
-        selectedTask: null,
-        selectedDates: null
-      }));
     }
   };
 
@@ -326,11 +177,10 @@ export const CalendarView = () => {
           goToPreviousYear={goToPreviousYear}
           goToNextYear={goToNextYear}
           goToPreviousWeek={goToPreviousWeek}
-          goToNextWeek={goToNextWeek}    
+          goToNextWeek={goToNextWeek}
           navigateToMonth={navigateToMonth}
           dropZoneRefs={dropZoneRefs}
           dropZones={dropZones}
-
         />
       </div>
 

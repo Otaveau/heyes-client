@@ -1,31 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
-import { DateUtils } from '../../utils/DateUtils';
 import { Button } from '../ui/button';
-
-const addTaskAppearEffect = (taskElement) => {
-  if (!taskElement) return;
-
-  // Ajouter la classe pour l'animation
-  taskElement.classList.add('task-newly-added');
-
-  // Supprimer la classe après l'animation pour éviter les problèmes de style
-  setTimeout(() => {
-    taskElement.classList.remove('task-newly-added');
-  }, 800); // Légèrement plus long que la durée de l'animation
-};
-
-// 3. Fonction pour gérer l'effet de pulsation sur la zone de drop
-const addDropzonePulseEffect = (zoneElement, isActive) => {
-  if (!zoneElement) return;
-
-  if (isActive) {
-    zoneElement.classList.add('dropzone-active', 'dropzone-pulse');
-  } else {
-    zoneElement.classList.remove('dropzone-active', 'dropzone-pulse');
-  }
-};
+import { getInclusiveEndDate } from '../../utils/DateUtils';
+import { addTaskAppearEffect, addDropzonePulseEffect } from '../../utils/DndUtils';
 
 export const TaskBoard = ({
   dropZones = [],
@@ -215,27 +193,25 @@ export const TaskBoard = ({
                 description: task.extendedProps?.description || ''
               }
             };
+          },
+          // Utiliser les callbacks directement dans les options du draggable au lieu de .on()
+          dragStart: function () {
+            // Activer les effets visuels sur toutes les zones de drop potentielles
+            effectiveRefs.current.forEach((dropRef, i) => {
+              if (dropRef && dropRef.current && i !== index) {
+                dropRef.current.classList.add('potential-drop-target');
+              }
+            });
+          },
+          dragEnd: function () {
+            // Désactiver les effets visuels
+            effectiveRefs.current.forEach((dropRef) => {
+              if (dropRef && dropRef.current) {
+                dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
+              }
+            });
+            setActiveDropZone(null);
           }
-        });
-
-        // Ajouter les événements de drag and drop pour les effets visuels
-        draggable.on('dragstart', () => {
-          // Activer les effets visuels sur toutes les zones de drop potentielles
-          effectiveRefs.current.forEach((dropRef, i) => {
-            if (dropRef && dropRef.current && i !== index) {
-              dropRef.current.classList.add('potential-drop-target');
-            }
-          });
-        });
-
-        draggable.on('dragend', () => {
-          // Désactiver les effets visuels
-          effectiveRefs.current.forEach((dropRef) => {
-            if (dropRef && dropRef.current) {
-              dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
-            }
-          });
-          setActiveDropZone(null);
         });
 
         draggablesRef.current[index] = draggable;
@@ -375,7 +351,7 @@ export const TaskBoard = ({
 
                       {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
                       {isInProgressZone && (
-                        <>
+                        <React.Fragment key={`info-${task.id}`}>
                           {task.resourceId && (
                             <div className="text-xs text-blue-600 mt-1">
                               <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
@@ -384,10 +360,10 @@ export const TaskBoard = ({
 
                           {/* Dates de la tâche */}
                           <div className="text-xs text-gray-600 mt-1">
-                            <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
-                            <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
+                            <div key={`start-${task.id}`}><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
+                            <div key={`end-${task.id}`}><span className="font-medium">Fin:</span> {formatDate(getInclusiveEndDate(task))}</div>
                           </div>
-                        </>
+                        </React.Fragment>
                       )}
 
                       {/* Barre d'actions avec boutons de déplacement et suppression */}
@@ -395,6 +371,7 @@ export const TaskBoard = ({
                         {/* Flèche gauche - visible sauf pour le premier taskboard */}
                         {index > 0 && (
                           <button
+                            key={`left-${task.id}`}
                             className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
                             onClick={(e) => moveTaskLeft(e, task)}
                             title="Déplacer vers la gauche"
@@ -405,6 +382,7 @@ export const TaskBoard = ({
 
                         {/* Bouton de suppression */}
                         <button
+                          key={`delete-${task.id}`}
                           className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
                           onClick={(e) => openDeleteModal(e, task)}
                           title="Supprimer la tâche"
@@ -415,6 +393,7 @@ export const TaskBoard = ({
                         {/* Flèche droite - visible sauf pour le dernier taskboard */}
                         {index < dropZones.length - 1 && (
                           <button
+                            key={`right-${task.id}`}
                             className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
                             onClick={(e) => moveTaskRight(e, task)}
                             title="Déplacer vers la droite"
