@@ -5,7 +5,7 @@ import { Card } from '../ui/card';
 import { Trash2, Plus, Loader2, Save, X, Palette } from 'lucide-react';
 import { fetchTeams, deleteTeam, createTeam, updateTeam } from '../../services/api/teamService';
 import ConfirmationModal from '../ui/confirmationModal';
-import ColorPickerPortal from 'components/ui/ColorPickerPortal';
+import ColorPickerPortal from 'components/team/TeamColorPicker';
 
 
 export default function TeamManagement() {

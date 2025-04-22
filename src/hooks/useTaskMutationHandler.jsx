@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
 import { createTask, updateTask, deleteTask } from '../services/api/taskService';
-import { DateUtils } from '../utils/dateUtils';
+import { DateUtils } from '../utils/DateUtils';
 
 export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holidays) => {
   // Fonction utilitaire pour convertir une date inclusive en date exclusive

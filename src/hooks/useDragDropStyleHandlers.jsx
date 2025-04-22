@@ -2,7 +2,7 @@ import { useCallback, useRef, useEffect } from 'react';
 import {
   applyDragDropStyles,
   cleanupAllHighlights
-} from '../utils/dndUtils';
+} from '../utils/DndUtils';
 
 
 export const useDragDropStyleHandlers = (dropZoneRefs, dropZones) => {

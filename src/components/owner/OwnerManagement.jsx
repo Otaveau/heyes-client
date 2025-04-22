@@ -8,7 +8,7 @@ import { fetchTeams } from '../../services/api/teamService';
 import ConfirmationModal from '../ui/confirmationModal';
 
 // Import des fonctions de couleur centralisées
-import { getContrastTextColor } from '../../utils/colorUtils';
+import { getContrastTextColor } from '../../utils/ColorUtils';
 
 export default function OwnerManagement() {
   const [owners, setOwners] = useState([]);

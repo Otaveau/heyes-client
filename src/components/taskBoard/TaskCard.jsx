@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, User } from 'lucide-react';
 import { ERROR_MESSAGES } from '../../constants/constants';
-import { DateUtils } from '../../utils/dateUtils';
+import { DateUtils } from '../../utils/DateUtils';
 
 const formatDate = (dateString) => {
   if (!dateString) return null;

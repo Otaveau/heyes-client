@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
-import { DateUtils } from '../../utils/dateUtils';
+import { DateUtils } from '../../utils/DateUtils';
 import { Button } from '../ui/button';
 
 const addTaskAppearEffect = (taskElement) => {

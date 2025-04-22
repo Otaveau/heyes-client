@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import { DateUtils } from '../utils/dateUtils';
+import { DateUtils } from '../utils/DateUtils';
 
 
 export const useExternalTaskHandlers = (

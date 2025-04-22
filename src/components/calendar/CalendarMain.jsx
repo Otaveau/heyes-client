@@ -3,9 +3,9 @@ import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
-import { DateUtils } from '../../utils/dateUtils';
+import { DateUtils } from '../../utils/DateUtils';
 import { getEnhancedCalendarStyles } from '../../style/calendarStyles';
-import { generateTaskColorFromBaseColor, getContrastTextColor, adjustColor } from '../../utils/colorUtils';
+import { generateTaskColorFromBaseColor, getContrastTextColor, adjustColor } from '../../utils/ColorUtils';
 import { CalendarNavigation } from './CalendarNavigation';
 
 export const CalendarMain = ({
