@@ -11,7 +11,7 @@ export const useExternalTaskHandlers = (
   updateTaskStatus,
   handleTaskUpdate,
   holidays,
-  dropZones
+  dropZones = [] // Ajouter une valeur par défaut (tableau vide)
 ) => {
   // Référence pour l'élément fantôme
   const ghostElementRef = useRef(null);
@@ -142,6 +142,12 @@ export const useExternalTaskHandlers = (
       const droppableElements = document.querySelectorAll('[data-status-id]');
 
       if (!droppableElements || droppableElements.length === 0) {
+        return null;
+      }
+
+      // Vérifier si dropZones est un tableau
+      if (!Array.isArray(dropZones)) {
+        console.warn('dropZones n\'est pas un tableau:', dropZones);
         return null;
       }
 

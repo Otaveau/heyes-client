@@ -205,7 +205,7 @@ export const CalendarView = () => {
         resources={resources}
         statuses={statuses}
         onSubmit={handleFormSubmit}
-        isProcessing={calendarState.isProcessing}
+        holidays={holidays}
         onDeleteTask={taskHandlers.handleDeleteTask}
       />
     </div>

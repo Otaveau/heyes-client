@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { X, Trash2, Calendar, User, FileText, Type, Tag } from 'lucide-react';
 import { ERROR_MESSAGES } from '../../constants/constants';
-import { formatDateForInput } from '../../utils/DateUtils';
+import { formatDateForInput, isHoliday, isWeekend } from '../../utils/DateUtils';
 import { DeleteConfirmationModal, ErrorMessage, WarningMessage } from './MessageForm';
 import { SubmitButton } from './SubmitButtonForm';
 
@@ -12,6 +12,7 @@ export const TaskForm = ({
     selectedTask,
     resources = [],
     statuses = [],
+    holidays = {},
     onSubmit: handleTaskSubmit,
     onDeleteTask
 }) => {
@@ -122,12 +123,58 @@ export const TaskForm = ({
 
             // Si le champ modifié est la date de début
             if (name === 'startDate' && value) {
-                // Si la date de fin est vide ou antérieure à la nouvelle date de début
-                if (!newData.endDate || new Date(newData.endDate) < new Date(value)) {
-                    // Mettre la date de fin égale à la date de début
-                    newData.endDate = value;
-                }
-            }
+              // Si la date de fin est vide ou antérieure à la nouvelle date de début
+              if (!newData.endDate || new Date(newData.endDate) < new Date(value)) {
+                  // Mettre la date de fin égale à la date de début
+                  newData.endDate = value;
+              }
+              
+              // Validation des jours fériés et week-ends pour la date de début
+              if (value) {
+                  const selectedDate = new Date(value);
+                  // Vérifier d'abord si c'est un week-end
+                  if (isWeekend(selectedDate)) {
+                      setTimeout(() => {
+                          setErrors(prev => ({
+                              ...prev,
+                              startDate: '⚠️ La date de début ne peut pas être un week-end'
+                          }));
+                      }, 0);
+                  } 
+                  // Ensuite vérifier si c'est un jour férié
+                  else if (holidays && Object.keys(holidays).length > 0 && isHoliday(selectedDate, holidays)) {
+                      setTimeout(() => {
+                          setErrors(prev => ({
+                              ...prev,
+                              startDate: '⚠️ La date de début ne peut pas être un jour férié'
+                          }));
+                      }, 0);
+                  }
+              }
+          }
+          
+          // Validation des jours fériés et week-ends pour la date de fin
+          if (name === 'endDate' && value) {
+              const selectedDate = new Date(value);
+              // Vérifier d'abord si c'est un week-end
+              if (isWeekend(selectedDate)) {
+                  setTimeout(() => {
+                      setErrors(prev => ({
+                          ...prev,
+                          endDate: '⚠️ La date de fin ne peut pas être un week-end'
+                      }));
+                  }, 0);
+              } 
+              // Ensuite vérifier si c'est un jour férié
+              else if (holidays && Object.keys(holidays).length > 0 && isHoliday(selectedDate, holidays)) {
+                  setTimeout(() => {
+                      setErrors(prev => ({
+                          ...prev,
+                          endDate: '⚠️ La date de fin ne peut pas être un jour férié'
+                      }));
+                  }, 0);
+              }
+          }
 
             // Gestion de l'option congé
             if (name === 'isConge') {
@@ -172,7 +219,7 @@ export const TaskForm = ({
                 }));
             }, 0);
         }
-    }, [errors, formData.resourceId, formData.startDate, formData.endDate]);
+    }, [errors, formData.resourceId, formData.startDate, formData.endDate, holidays]);
 
 
     // Validation du formulaire
@@ -218,6 +265,31 @@ export const TaskForm = ({
       newErrors.endDate = ERROR_MESSAGES.END_DATE_VALIDATION;
     }
 
+    // Vérification des jours fériés et week-ends
+    if (formData.startDate) {
+      const startDate = new Date(formData.startDate);
+      // Vérifier d'abord si c'est un week-end
+      if (isWeekend(startDate)) {
+        newErrors.startDate = '⚠️ La date de début ne peut pas être un week-end';
+      }
+      // Ensuite vérifier si c'est un jour férié
+      else if (holidays && Object.keys(holidays).length > 0 && isHoliday(startDate, holidays)) {
+        newErrors.startDate = '⚠️ La date de début ne peut pas être un jour férié';
+      }
+    }
+
+    if (formData.endDate) {
+      const endDate = new Date(formData.endDate);
+      // Vérifier d'abord si c'est un week-end
+      if (isWeekend(endDate)) {
+        newErrors.endDate = '⚠️ La date de fin ne peut pas être un week-end';
+      }
+      // Ensuite vérifier si c'est un jour férié
+      else if (holidays && Object.keys(holidays).length > 0 && isHoliday(endDate, holidays)) {
+        newErrors.endDate = '⚠️ La date de fin ne peut pas être un jour férié';
+      }
+    }
+
     if (formData.isConge) {
       if (!formData.resourceId) {
         newErrors.resourceId = 'La ressource est requise pour un congé';
@@ -228,10 +300,10 @@ export const TaskForm = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formData, holidays]);
 
 
-     // Soumission du formulaire
+  // Soumission du formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -448,7 +520,11 @@ export const TaskForm = ({
                     className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required={isWipStatus || !!formData.resourceId}
                   />
-                  <ErrorMessage message={errors.startDate} />
+                  {errors.startDate ? (
+                <div className="text-red-600 text-sm font-medium mt-1.5 p-1.5 bg-red-50 border border-red-200 rounded-md">
+                  {errors.startDate}
+                </div>
+              ) : null}
                 </div>
 
                 <div>
@@ -465,7 +541,11 @@ export const TaskForm = ({
                     required={isWipStatus || !!formData.resourceId}
                     min={formData.startDate}
                   />
-                  <ErrorMessage message={errors.endDate} />
+                  {errors.endDate ? (
+                <div className="text-red-600 text-sm font-medium mt-1.5 p-1.5 bg-red-50 border border-red-200 rounded-md">
+                  {errors.endDate}
+                </div>
+              ) : null}
                 </div>
               </div>
             </div>

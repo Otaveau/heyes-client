@@ -25,8 +25,13 @@ export const TaskBoard = ({
 
   // Initialiser les références internes si nécessaire
   useEffect(() => {
-    if (!internalRefs.current.length) {
-      internalRefs.current = dropZones.map(() => React.createRef());
+    if (!dropZones || dropZones.length === 0) return;
+    
+    // Redimensionner le tableau de références si nécessaire
+    if (internalRefs.current.length !== dropZones.length) {
+      internalRefs.current = Array(dropZones.length).fill(null).map((_, i) => 
+        internalRefs.current[i] || React.createRef()
+      );
     }
   }, [dropZones]);
 
@@ -117,6 +122,8 @@ export const TaskBoard = ({
 
   // Observer les changements dans les zones pour ajouter les effets d'apparition aux nouvelles tâches
   useEffect(() => {
+    if (!effectiveRefs.current || effectiveRefs.current.length === 0) return;
+
     // Pour chaque dropzone, configurer un observateur de mutation
     effectiveRefs.current.forEach((ref, index) => {
       if (!ref || !ref.current) return;
@@ -144,11 +151,29 @@ export const TaskBoard = ({
 
   // Initialisation des draggables FullCalendar pour le calendrier
   useEffect(() => {
-    // S'assurer que les refs sont initialisées
+    // S'assurer que dropZones est défini et non vide
+    if (!dropZones || dropZones.length === 0) {
+      console.warn("Les dropZones ne sont pas disponibles");
+      return;
+    }
+
+    // S'assurer que les refs sont initialisées et disponibles
     if (!effectiveRefs.current || effectiveRefs.current.length === 0) {
       console.warn("Les références ne sont pas disponibles pour les draggables");
       return;
     }
+
+    // S'assurer que toutes les refs ont une valeur current
+    const allRefsValid = effectiveRefs.current.every((ref, idx) => {
+      if (!ref || !ref.current) {
+        console.warn(`Référence ${idx} non valide`);
+        return false;
+      }
+      return true;
+    });
+
+    // Si certaines références ne sont pas valides, ne pas continuer
+    if (!allRefsValid) return;
 
     // Nettoyage des anciens draggables
     draggablesRef.current.forEach(draggable => {
@@ -158,13 +183,10 @@ export const TaskBoard = ({
 
     // Configuration des draggables FullCalendar seulement pour les zones qui ne sont pas statusId '2'
     effectiveRefs.current.forEach((ref, index) => {
-      if (!ref || !ref.current) {
-        console.warn(`Référence ${index} non disponible`);
-        return;
-      }
-
-      // Ne pas créer de draggable pour la zone avec statusId '2'
+      if (index >= dropZones.length) return; // Vérifier que l'index est valide
       const zone = dropZones[index];
+      
+      // Ne pas créer de draggable pour la zone avec statusId '2'
       if (zone && zone.statusId === '2') {
         return;
       }
@@ -314,7 +336,7 @@ export const TaskBoard = ({
 
             return (
               <div
-                key={zone.id}
+                key={zone.id || `zone-${index}`}
                 ref={effectiveRefs.current[index]}
                 className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
                 data-status-id={zone.statusId}
