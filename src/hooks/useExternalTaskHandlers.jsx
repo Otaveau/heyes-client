@@ -11,7 +11,6 @@ export const useExternalTaskHandlers = (
   updateTaskStatus,
   handleTaskUpdate,
   holidays,
-  dropZoneRefs,
   dropZones
 ) => {
   // Référence pour l'élément fantôme
@@ -269,8 +268,6 @@ export const useExternalTaskHandlers = (
   }, []);
 
   // Fin du glisser-déposer
-  // Dans votre fonction handleEventDragStop de useExternalTaskHandlers.js
-
   const handleEventDragStop = useCallback(async (info) => {
 
     const eventId = info.event.id;
@@ -346,7 +343,7 @@ export const useExternalTaskHandlers = (
           simulateImmediateAppearance(taskId, dropZone);
         }
 
-        // CORRECTION: Préparer les mises à jour pour le déplacement vers le taskboard
+        // Préparer les mises à jour pour le déplacement vers le taskboard
         // en s'assurant que TOUTES les propriétés liées aux dates sont nulles
         const updates = {
           // Propriétés de ressource
