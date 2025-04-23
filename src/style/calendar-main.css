@@ -1,0 +1,741 @@
+/* calendar-main.css */
+/* Fichier CSS principal pour le calendrier */
+
+/* ===================================
+ * TABLE DES MATIÈRES
+ * ===================================
+ * 1. Variables
+ * 2. Layout général
+ * 3. HeaderToolbar
+ * 4. Boutons et navigation
+ * 5. Sections du calendrier
+ * 6. Ressources et équipes
+ * 7. Jours spéciaux
+ * 8. Événements
+ * 9. Animations
+ * 10. Responsive Design
+ * =================================== */
+
+/* ===================================
+ * 1. Variables
+ * =================================== */
+ :root {
+    /* Couleurs primaires */
+    --color-primary: #3b82f6;
+    --color-primary-dark: #2563eb;
+    --color-primary-light: #60a5fa;
+    
+    /* Couleurs de fond */
+    --color-bg-light: #f8fafc;
+    --color-bg-white: #ffffff;
+    --color-bg-hover: #f3f4f6;
+    --color-bg-taskboard: #fafafa;
+  
+    /* Couleurs pour états */
+    --color-today-bg: rgba(59, 130, 246, 0.05);
+    --color-weekend-bg: #f3f4f6;
+    --color-holiday-bg: #fee2e2;
+    
+    /* Couleurs de texte */
+    --color-text-dark: #1f2937;
+    --color-text-medium: #4b5563;
+    --color-text-light: #6b7280;
+    --color-text-blue: #2563eb;
+    
+    /* Bordures */
+    --color-border-light: #e2e8f0;
+    --color-border-medium: #cbd5e1;
+    --color-border-column: #f0f0f0;
+    
+    /* Ombres */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.05);
+    
+    /* Animations */
+    --transition-fast: all 0.2s ease;
+    --transition-med: all 0.3s ease;
+    
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+  }
+  
+  /* ===================================
+   * 2. Layout général
+   * =================================== */
+  .calendar-container {
+    margin-left: 1rem;
+  }
+  
+  .fc {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-border-light);
+  }
+  
+  /* ===================================
+   * 3. HeaderToolbar
+   * =================================== */
+  .fc .fc-toolbar {
+    background-color: var(--color-bg-light);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+  }
+  
+  /* ===================================
+   * 4. Boutons et navigation
+   * =================================== */
+  
+  /* Styles pour les boutons standard */
+  .fc .fc-button-primary {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.025em;
+    transition: var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    padding: 6px 12px;
+  }
+  
+  .fc .fc-button-primary:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #334155;
+    transform: translateY(-1px);
+  }
+  
+  .fc .fc-button-primary:not(:disabled):active,
+  .fc .fc-button-primary.fc-button-active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary-dark);
+    color: #ffffff;
+    font-weight: 600;
+  }
+  
+  /* Styles pour les séparateurs de boutons */
+  .fc .fc-button-group {
+    box-shadow: var(--shadow-sm);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .fc .fc-button-group .fc-button-primary {
+    border-radius: 0;
+    border-right-width: 0;
+  }
+  
+  .fc .fc-button-group .fc-button-primary:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+  
+  .fc .fc-button-group .fc-button-primary:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-right-width: 1px;
+  }
+  
+  /* Navigation personnalisée */
+  .fc-custom-nav-container {
+    margin-bottom: 16px;
+    padding: 10px;
+    background-color: var(--color-bg-light);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-light);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .fc-nav-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  /* Section de navigation par année */
+  .fc-year-nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #f1f5f9;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Affichage de l'année */
+  .fc-year-display {
+    margin: 0 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    min-width: 60px;
+    text-align: center;
+    color: var(--color-text-blue);
+    user-select: none;
+  }
+  
+  /* Boutons de navigation d'année */
+  .fc-prev-year-button,
+  .fc-next-year-button,
+  .fc-today-button {
+    font-size: 0.9rem;
+    padding: 6px 12px !important;
+    border-radius: 6px;
+    transition: var(--transition-fast);
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+  }
+  
+  .fc-prev-year-button:hover,
+  .fc-next-year-button:hover,
+  .fc-today-button:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #334155;
+    transform: translateY(-1px);
+  }
+  
+  .fc-today-button {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary-dark);
+    color: #ffffff;
+    font-weight: 500;
+  }
+  
+  .fc-today-button:hover {
+    background-color: var(--color-primary-dark);
+    border-color: #1d4ed8;
+    color: #ffffff;
+  }
+  
+  /* Section de navigation par mois */
+  .fc-months-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+    transition: opacity 0.3s ease, height 0.3s ease;
+  }
+  
+  /* Boutons des mois */
+  .fc-month-button {
+    font-size: 0.85rem;
+    padding: 6px 10px !important;
+    margin: 0;
+    min-width: 80px;
+    text-align: center;
+    border-radius: 6px;
+    transition: var(--transition-fast);
+    position: relative;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+  }
+  
+  /* Gestion des versions abrégées/complètes des noms de mois */
+  .fc-month-button .month-full {
+    display: inline;
+  }
+  
+  .fc-month-button .month-abbr {
+    display: none;
+  }
+  
+  /* Effets de survol et d'état actif */
+  .fc-month-button:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .fc-month-button.fc-button-active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary-dark);
+    color: #ffffff;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(29, 78, 216, 0.2);
+  }
+  
+  /* Style pour ajouter un indicateur sous le mois actif */
+  .fc-month-button.fc-button-active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    border-radius: 3px;
+    background-color: #1d4ed8;
+  }
+  
+  /* Personnalisation des boutons de navigation de vue */
+  .fc-resourceTimelineYear-button,
+  .fc-resourceTimelineMonth-button,
+  .fc-resourceTimelineWeek-button {
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-weight: 500;
+    font-size: 0.85rem;
+  }
+  
+  /* Indicateur visuel pour le bouton de vue active */
+  .fc-button-active.fc-resourceTimelineYear-button::after,
+  .fc-button-active.fc-resourceTimelineMonth-button::after,
+  .fc-button-active.fc-resourceTimelineWeek-button::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 25%;
+    width: 50%;
+    height: 3px;
+    border-radius: 3px;
+    background-color: #1d4ed8;
+  }
+  
+  /* Animation lors du clic sur un bouton */
+  .fc-button-clicked {
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+  }
+  
+  /* Style pour l'effet temporaire */
+  .fc-month-button.fc-button-clicked {
+    background-color: #4a5568;
+    color: white;
+    transform: scale(0.98);
+    transition: all 0.2s ease;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* ===================================
+   * 5. Sections du calendrier
+   * =================================== */
+  
+  /* Style des en-têtes de colonne */
+  .fc .fc-col-header-cell {
+    background-color: var(--color-bg-light);
+    font-weight: 600;
+  }
+  
+  .fc .fc-col-header-cell-cushion {
+    padding: 8px 4px;
+    color: var(--color-text-dark);
+  }
+  
+  /* Style des cellules du calendrier */
+  .fc .fc-daygrid-day {
+    transition: background-color 0.15s ease;
+  }
+  
+  .fc .fc-daygrid-day:hover {
+    background-color: #f1f5f9;
+  }
+  
+  /* Style des lignes alternées pour une meilleure lisibilité */
+  .fc-timeline-lane:nth-child(even) {
+    background-color: #f8fafc;
+  }
+  
+  .fc-timeline-lane:nth-child(odd) {
+    background-color: #ffffff;
+  }
+  
+  /* ===================================
+   * 6. Ressources et équipes
+   * =================================== */
+  
+  /* Style spécifique pour la zone des ressources */
+  .fc-resource-area {
+    background-color: var(--color-bg-light);
+    border-right: 1px solid var(--color-border-light);
+  }
+  
+  .fc-resource-area .fc-datagrid-cell-main {
+    padding: 8px 12px;
+  }
+  
+  /* Style pour les ressources */
+  .resource-team-header {
+    font-weight: bold;
+    background-color: var(--color-bg-hover);
+    border-bottom: 1px solid var(--color-border-medium);
+    color: var(--color-text-dark);
+    font-size: 0.95rem;
+  }
+  
+  .resource-team-indicator {
+    border-left: 4px solid; /* La couleur sera définie dynamiquement */
+  }
+  
+  .resource-owner-cell {
+    padding-left: 20px;
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text-medium);
+  }
+  
+  /* Style pour les lanes de ressources */
+  .resource-team-lane {
+    background-color: var(--color-bg-hover);
+    cursor: not-allowed;
+  }
+  
+  /* Style pour les lignes d'équipes */
+  .fc-timeline-lane.team-resource-lane {
+    background-color: var(--color-bg-hover) !important;
+    cursor: not-allowed !important;
+  }
+  
+  /* Empêcher visuellement le dépôt sur les équipes */
+  .fc-timeline-lane.team-resource-lane.fc-highlight {
+    background-color: #fee2e2 !important;
+  }
+  
+  /* Renforcer les styles pour les en-têtes d'équipe */
+  .fc-datagrid-cell.team-header {
+    font-weight: bold !important;
+    background-color: var(--color-bg-hover) !important;
+    border-bottom: 1px solid var(--color-border-medium) !important;
+  }
+  
+  /* Style pour propriétaires (enfants des équipes) */
+  .fc-datagrid-cell.owner-cell {
+    padding-left: 20px !important;
+  }
+  
+  /* ===================================
+   * 7. Jours spéciaux
+   * =================================== */
+  
+  /* Styles communs pour les jours fériés et weekends */
+  .fc .holiday-slot,
+  .fc .weekend-slot,
+  .fc .holiday-column,
+  .fc .weekend-column {
+    background-color: var(--color-weekend-bg) !important;
+  }
+  
+  .fc .holiday-slot .fc-timeline-slot-cushion,
+  .fc .weekend-slot .fc-timeline-slot-cushion,
+  .fc .holiday-column .fc-timeline-slot-cushion,
+  .fc .weekend-column .fc-timeline-slot-cushion {
+    color: var(--color-text-light);
+  }
+  
+  /* Styles spécifiques */
+  .holiday-column {
+    background-color: var(--color-holiday-bg) !important;
+  }
+  
+  .weekend-column {
+    background-color: var(--color-weekend-bg) !important;
+  }
+  
+  /* Style pour le jour actuel */
+  .fc-day-today {
+    background-color: var(--color-today-bg) !important;
+    border-left: 2px solid var(--color-primary) !important;
+    border-right: 2px solid var(--color-primary) !important;
+  }
+  
+  /* ===================================
+   * 8. Événements
+   * =================================== */
+  
+  /* Style des événements */
+  .fc-event {
+    border-radius: 4px;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem;
+    cursor: move !important;
+    user-select: none;
+    transition: var(--transition-fast);
+  }
+  
+  .fc-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  }
+  
+  /* Événements de tâches standards */
+  .fc-event-main-custom {
+    padding: 3px 6px; 
+    border-radius: 4px; 
+    height: 100%;
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* Événements de congés */
+  .fc-event-main-custom.conge-event {
+    position: relative;
+    height: 100%;
+    padding: 3px 6px; 
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    overflow: visible;
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+    background-color: var(--color-bg-white);
+    background: repeating-linear-gradient(
+      45deg,
+      #e5e7eb,
+      #e5e7eb 4px,
+      #f3f4f6 4px,
+      #f3f4f6 8px
+    );
+    border-left: 3px solid #9ca3af;
+    color: var(--color-text-medium);
+    font-weight: 600;
+  }
+  
+  /* Structure des titres d'événements */
+  .task-title-container,
+  .conge-event .event-title-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
+  
+  .task-title,
+  .conge-event .event-title-text {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: sticky;
+    left: 6px;
+  }
+  
+  .task-title {
+    max-width: 90%;
+    padding: 2px 4px;
+    backdrop-filter: blur(2px);
+    border-radius: 3px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.1);
+  }
+  
+  .conge-event .event-title-text {
+    display: flex; 
+    align-items: center;
+    background-color: transparent;
+    max-width: calc(100% - 12px);
+  }
+  
+  .conge-event .calendar-icon {
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+  
+  .conge-event .title-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .conge-event .hidden-title {
+    visibility: hidden;
+  }
+  
+  .task-title-duplicate {
+    visibility: visible;
+    opacity: 0.4;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 95%;
+  }
+  
+  /* ===================================
+   * 9. Animations
+   * =================================== */
+  @keyframes pulse-border {
+    0% {
+      box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.5), 0 0 15px rgba(74, 108, 247, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(74, 108, 247, 0.7), 0 0 20px rgba(74, 108, 247, 0.6);
+    }
+    100% {
+      box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.5), 0 0 15px rgba(74, 108, 247, 0.4);
+    }
+  }
+  
+  @keyframes taskAddedAnimation {
+    0% {
+      transform: scale(1);
+      background-color: rgba(74, 108, 247, 0.4);
+    }
+    50% {
+      transform: scale(1.1);
+      background-color: rgba(74, 108, 247, 0.6);
+    }
+    100% {
+      transform: scale(1);
+      background-color: inherit;
+    }
+  }
+  
+  @keyframes taskAppear {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+    50% {
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      background-color: var(--color-bg-white);
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: translate(-50%, -50%) scale(0.95);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1.3);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes pulseTarget {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+  }
+  
+  /* ===================================
+   * 10. Responsive Design
+   * =================================== */
+  @media (max-width: 992px) {
+    .fc-nav-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .fc-year-nav {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .fc-months-nav {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    
+    .fc-month-button {
+      min-width: 70px;
+      padding: 5px 8px !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .fc .fc-toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .fc .fc-toolbar-chunk {
+      margin-bottom: 8px;
+      width: 100%;
+    }
+    
+    .fc-month-button {
+      min-width: 60px;
+      font-size: 0.8rem;
+    }
+    
+    .fc-year-display {
+      font-size: 1.1rem;
+      min-width: 50px;
+    }
+    
+    .fc-prev-year-button,
+    .fc-next-year-button,
+    .fc-today-button {
+      font-size: 0.8rem;
+      padding: 5px 10px !important;
+    }
+    
+    .month-full { display: none; }
+    .month-abbr { display: inline; }
+  }
+  
+  @media (max-width: 640px) {
+    .fc-month-button {
+      min-width: 45px;
+      padding: 4px 6px !important;
+    }
+    
+    .fc-today-button {
+      font-size: 0.75rem;
+      padding: 4px 8px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .fc-month-button {
+      min-width: 40px;
+      font-size: 0.75rem;
+      padding: 3px 5px !important;
+    }
+    
+    .fc-custom-nav-container {
+      margin-bottom: 5px;
+    }
+    
+    .fc-year-nav {
+      gap: 2px;
+    }
+    
+    .fc-year-display {
+      font-size: 1rem;
+      min-width: 40px;
+      margin: 0 4px;
+    }
+  }

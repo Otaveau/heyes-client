@@ -3,10 +3,11 @@ import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
-import { getEnhancedCalendarStyles } from '../../style/calendarStyles';
 import { CalendarNavigation } from './CalendarNavigation';
 import { getWeekNumber, navigateToToday } from '../../utils/DateUtils';
-import { createMemberColorMap, adaptColorToDarkMode } from '../../utils/ColorUtils';
+import { createMemberColorMap } from '../../utils/ColorUtils';
+import '../../style/calendar-main.css';
+import '../../style/calendar-dark.css';
 import { 
   formatTasksForCalendar, 
   handleResourceLabelMount, 
@@ -87,14 +88,6 @@ export const CalendarMain = ({
   // Formater les tâches pour le calendrier
   const formattedTasksForCalendar = useMemo(() => formatTasksForCalendar(tasks), [tasks]);
 
-  // Initialiser les styles du calendrier
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = getEnhancedCalendarStyles();
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-
   // Faire défiler jusqu'au mois actuel lors du chargement
   useEffect(() => {
     if (calendarRef.current) {
@@ -146,7 +139,7 @@ export const CalendarMain = ({
       },
       // Vous pouvez adapter d'autres gestionnaires selon vos besoins
     };
-  }, [taskHandlers, darkMode]);
+  }, [taskHandlers]);
 
   // Adapter le rendu des événements pour le mode sombre
   const adaptedRenderEventContent = (arg) => {

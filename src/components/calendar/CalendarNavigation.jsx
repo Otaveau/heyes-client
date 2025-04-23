@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../../context/ThemeContext'; // Assurez-vous que le chemin est correct
+import { useTheme } from '../../context/ThemeContext';
 
 export const CalendarNavigation = ({
   selectedYear,
@@ -17,10 +17,10 @@ export const CalendarNavigation = ({
   useTheme(); // Récupération de l'état du mode sombre
   
   return (
-    <div className="fc-custom-nav-container">
+    <div className="fc-custom-nav-container bg-gray-50 dark:bg-gray-800">
       <div className="fc-nav-row">
         {/* Navigation par année - Gauche */}
-        <div className="fc-year-nav">
+        <div className="fc-year-nav bg-gray-50 dark:bg-gray-900">
           <button
             type="button"
             className="fc-button fc-button-primary fc-prev-year-button"

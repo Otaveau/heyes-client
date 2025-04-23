@@ -5,7 +5,8 @@ import { useCalendarNavigation } from '../../hooks/useCalendarNavigation';
 import { CalendarMain } from '../calendar/CalendarMain';
 import { TaskBoard } from '../taskBoard/TaskBoard';
 import { TaskForm } from '../form/TaskForm';
-import '../../style/CalendarView.css';
+import '../../style/calendar-main.css';
+import '../../style/calendar-dark.css';
 
 export const CalendarView = () => {
   // État principal du calendrier
