@@ -6,7 +6,7 @@ import frLocale from '@fullcalendar/core/locales/fr';
 import { getEnhancedCalendarStyles } from '../../style/calendarStyles';
 import { CalendarNavigation } from './CalendarNavigation';
 import { getWeekNumber, navigateToToday } from '../../utils/DateUtils';
-import { createMemberColorMap } from '../../utils/ColorUtils';
+import { createMemberColorMap, adaptColorToDarkMode } from '../../utils/ColorUtils';
 import { 
   formatTasksForCalendar, 
   handleResourceLabelMount, 
@@ -18,6 +18,7 @@ import {
   getDayCellClasses, 
   renderEventContent 
 } from '../../utils/CalendarUtils';
+import { useTheme } from '../../context/ThemeContext';
 
 // Configuration de FullCalendar
 const CALENDAR_CONFIG = {
@@ -74,9 +75,14 @@ export const CalendarMain = ({
 }) => {
   const [currentView, setCurrentView] = useState('resourceTimelineYear');
   const [currentWeekNumber, setCurrentWeekNumber] = useState(1);
+  const { darkMode } = useTheme();
 
   // Générer la map des couleurs basée sur les teams des owners
-  const memberColorMap = useMemo(() => createMemberColorMap(resources), [resources]);
+  // En passant darkMode pour adapter les couleurs selon le thème
+  const memberColorMap = useMemo(() => 
+    createMemberColorMap(resources, darkMode), 
+    [resources, darkMode]
+  );
 
   // Formater les tâches pour le calendrier
   const formattedTasksForCalendar = useMemo(() => formatTasksForCalendar(tasks), [tasks]);
@@ -98,6 +104,18 @@ export const CalendarMain = ({
     }
   }, [calendarRef]);
 
+  // Appliquer ou retirer le mode sombre sur l'élément du calendrier
+  useEffect(() => {
+    const calendarElement = document.querySelector('.fc');
+    if (calendarElement) {
+      if (darkMode) {
+        calendarElement.classList.add('fc-theme-dark');
+      } else {
+        calendarElement.classList.remove('fc-theme-dark');
+      }
+    }
+  }, [darkMode]);
+
   // Gestionnaire de changement de vue
   const internalHandleViewChange = (info) => {
     const newView = info.view.type;
@@ -116,6 +134,24 @@ export const CalendarMain = ({
 
   // Gestionnaire pour le bouton "Aujourd'hui"
   const handleTodayClick = () => navigateToToday(calendarRef, selectedYear, setSelectedYear, navigateToMonth);
+
+  // Adapter les gestionnaires d'événements pour prendre en compte le mode sombre
+  const adaptedTaskHandlers = useMemo(() => {
+    return {
+      ...taskHandlers,
+      // Exemple d'adaptation d'un gestionnaire pour le mode sombre
+      handleEventDragStart: (info) => {
+        taskHandlers.handleEventDragStart(info);
+        // Logique supplémentaire pour le mode sombre si nécessaire
+      },
+      // Vous pouvez adapter d'autres gestionnaires selon vos besoins
+    };
+  }, [taskHandlers, darkMode]);
+
+  // Adapter le rendu des événements pour le mode sombre
+  const adaptedRenderEventContent = (arg) => {
+    return renderEventContent(arg, memberColorMap, darkMode);
+  };
 
   return (
     <div className="calendar-container">
@@ -148,31 +184,31 @@ export const CalendarMain = ({
           }
         }}
 
-        // Styles pour les ressources
-        resourceLabelDidMount={handleResourceLabelMount}
-        resourceLaneDidMount={handleResourceLaneMount}
+        // Styles pour les ressources - passer le mode sombre
+        resourceLabelDidMount={(info) => handleResourceLabelMount(info, darkMode)}
+        resourceLaneDidMount={(info) => handleResourceLaneMount(info, darkMode)}
 
         // Autorisation pour le drag & drop
         eventAllow={(dropInfo) => isEventAllowed(dropInfo, resources, holidays)}
 
-        // Classes CSS pour les jours fériés et week-ends
-        slotLabelClassNames={arg => getSlotLabelClasses(arg, holidays)}
-        slotLaneClassNames={arg => getSlotLaneClasses(arg, holidays)}
-        dayHeaderClassNames={arg => getDayHeaderClasses(arg, holidays)}
-        dayCellClassNames={arg => getDayCellClasses(arg, holidays)}
+        // Classes CSS pour les jours fériés et week-ends - passer le mode sombre
+        slotLabelClassNames={arg => getSlotLabelClasses(arg, holidays, darkMode)}
+        slotLaneClassNames={arg => getSlotLaneClasses(arg, holidays, darkMode)}
+        dayHeaderClassNames={arg => getDayHeaderClasses(arg, holidays, darkMode)}
+        dayCellClassNames={arg => getDayCellClasses(arg, holidays, darkMode)}
 
-        // Contenu des événements
-        eventContent={arg => renderEventContent(arg, memberColorMap)}
+        // Contenu des événements - adaptés pour le mode sombre
+        eventContent={adaptedRenderEventContent}
 
-        // Gestionnaires d'événements
-        eventDragStart={taskHandlers.handleEventDragStart}
-        eventDrop={taskHandlers.handleEventDrop}
-        drop={taskHandlers.handleExternalDrop}
-        select={taskHandlers.handleDateClick}
-        eventClick={taskHandlers.handleCalendarEventClick}
-        eventResize={taskHandlers.handleEventResize}
-        eventDragStop={taskHandlers.handleEventDragStop}
-        eventReceive={taskHandlers.handleEventReceive}
+        // Gestionnaires d'événements - adaptés pour le mode sombre
+        eventDragStart={adaptedTaskHandlers.handleEventDragStart}
+        eventDrop={adaptedTaskHandlers.handleEventDrop}
+        drop={adaptedTaskHandlers.handleExternalDrop}
+        select={adaptedTaskHandlers.handleDateClick}
+        eventClick={adaptedTaskHandlers.handleCalendarEventClick}
+        eventResize={adaptedTaskHandlers.handleEventResize}
+        eventDragStop={adaptedTaskHandlers.handleEventDragStop}
+        eventReceive={adaptedTaskHandlers.handleEventReceive}
       />
     </div>
   );

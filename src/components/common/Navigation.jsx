@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import logoImage from '../../assets/hays.png';
 import { 
   Calendar, 
@@ -9,7 +10,9 @@ import {
   LogOut, 
   Menu, 
   X,  
-  Settings
+  Settings,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 // Composant pour le badge d'avatar utilisateur
@@ -54,6 +57,25 @@ const MobileNavItem = ({ path, icon, label, isActive }) => (
     <span className="ml-3">{label}</span>
   </Link>
 );
+
+// Composant pour le toggle du thème
+const ThemeToggle = () => {
+  const { darkMode, toggleDarkMode } = useTheme();
+  
+  return (
+    <button
+      onClick={toggleDarkMode}
+      className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+      aria-label={darkMode ? "Passer au mode clair" : "Passer au mode sombre"}
+    >
+      {darkMode ? (
+        <Sun className="h-6 w-6" aria-hidden="true" />
+      ) : (
+        <Moon className="h-6 w-6" aria-hidden="true" />
+      )}
+    </button>
+  );
+};
 
 export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -163,6 +185,11 @@ export default function Navigation() {
 
             {/* Actions de droite */}
             <div className="flex items-center">
+              {/* Bouton de bascule thème sombre/clair */}
+              <div className="mr-4">
+                <ThemeToggle />
+              </div>
+              
               {/* Menu utilisateur */}
               <div className="ml-3 relative">
                 <button
@@ -256,6 +283,12 @@ export default function Navigation() {
               isActive={location.pathname === item.path}
             />
           ))}
+          {/* Ajouter le toggle du thème dans le menu mobile */}
+          <div className="px-4 py-3 flex items-center">
+            <Sun className="h-6 w-6 mr-3 text-gray-500 dark:text-gray-400" />
+            <span className="text-lg font-medium text-gray-700 dark:text-gray-300 mr-auto">Mode sombre</span>
+            <ThemeToggle />
+          </div>
         </nav>
         <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center px-4">

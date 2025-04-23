@@ -4,6 +4,7 @@ import { Draggable } from '@fullcalendar/interaction';
 import { Button } from '../ui/button';
 import { getInclusiveEndDate } from '../../utils/DateUtils';
 import { addTaskAppearEffect, addDropzonePulseEffect } from '../../utils/DndUtils';
+import { useTheme } from '../../context/ThemeContext';
 
 export const TaskBoard = ({
   dropZones = [],
@@ -19,6 +20,7 @@ export const TaskBoard = ({
   const [taskToDelete, setTaskToDelete] = useState(null);
   const draggablesRef = useRef([]);
   const [activeDropZone, setActiveDropZone] = useState(null);
+  const { darkMode } = useTheme();
 
   // Créer des références locales si aucune n'est fournie
   const internalRefs = useRef([]);
@@ -338,12 +340,20 @@ export const TaskBoard = ({
               <div
                 key={zone.id || `zone-${index}`}
                 ref={effectiveRefs.current[index]}
-                className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
+                className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target ${
+                  isInProgressZone 
+                    ? 'bg-blue-50 dark:bg-blue-900/20' 
+                    : 'bg-gray-100 dark:bg-gray-800 dropzone'
+                } rounded-lg shadow-md`}
                 data-status-id={zone.statusId}
                 data-zone-id={zone.id}
                 data-dropzone-id={zone.id}
               >
-                <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
+                <h3 className={`mb-4 font-bold ${
+                  isInProgressZone 
+                    ? 'text-blue-700 dark:text-blue-400' 
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}>
                   {zone.title}
                 </h3>
                 {zoneTasks.map(task => {
@@ -357,16 +367,16 @@ export const TaskBoard = ({
                     <div
                       key={task.id}
                       data-task-id={task.id}
-                      className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white border rounded hover:bg-gray-50 relative`}
+                      className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600 relative`}
                       data-is-conge={isConge ? 'true' : 'false'}
                       onClick={() => handleExternalTaskClick && handleExternalTaskClick(task)}
                     >
                       {/* Titre affiché pour toutes les tâches */}
-                      <div className="font-medium">{task.title}</div>
+                      <div className="font-medium dark:text-white">{task.title}</div>
 
                       {/* Description affichée pour toutes les tâches si elle existe */}
                       {(task.description || task.extendedProps?.description) && (
-                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                           {task.description || task.extendedProps?.description}
                         </div>
                       )}
@@ -375,13 +385,13 @@ export const TaskBoard = ({
                       {isInProgressZone && (
                         <React.Fragment key={`info-${task.id}`}>
                           {task.resourceId && (
-                            <div className="text-xs text-blue-600 mt-1">
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                               <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
                             </div>
                           )}
 
                           {/* Dates de la tâche */}
-                          <div className="text-xs text-gray-600 mt-1">
+                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             <div key={`start-${task.id}`}><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
                             <div key={`end-${task.id}`}><span className="font-medium">Fin:</span> {formatDate(getInclusiveEndDate(task))}</div>
                           </div>
@@ -394,7 +404,7 @@ export const TaskBoard = ({
                         {index > 0 && (
                           <button
                             key={`left-${task.id}`}
-                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 focus:outline-none"
                             onClick={(e) => moveTaskLeft(e, task)}
                             title="Déplacer vers la gauche"
                           >
@@ -405,7 +415,7 @@ export const TaskBoard = ({
                         {/* Bouton de suppression */}
                         <button
                           key={`delete-${task.id}`}
-                          className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
+                          className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 focus:outline-none"
                           onClick={(e) => openDeleteModal(e, task)}
                           title="Supprimer la tâche"
                         >
@@ -416,7 +426,7 @@ export const TaskBoard = ({
                         {index < dropZones.length - 1 && (
                           <button
                             key={`right-${task.id}`}
-                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 focus:outline-none"
                             onClick={(e) => moveTaskRight(e, task)}
                             title="Déplacer vers la droite"
                           >
@@ -428,7 +438,7 @@ export const TaskBoard = ({
                   );
                 })}
                 {zoneTasks.length === 0 && (
-                  <div className="text-gray-400 text-center p-2">
+                  <div className="text-gray-400 dark:text-gray-500 text-center p-2">
                     Pas de tâches
                   </div>
                 )}
@@ -441,20 +451,20 @@ export const TaskBoard = ({
       {/* Modal de confirmation de suppression */}
       {deleteModalOpen && taskToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4">Confirmer la suppression</h3>
-            <p className="mb-6">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4 dark:text-white">Confirmer la suppression</h3>
+            <p className="mb-6 dark:text-gray-300">
               Êtes-vous sûr de vouloir supprimer la tâche "{taskToDelete.title}" ?
             </p>
             <div className="flex justify-end space-x-4">
               <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
                 onClick={closeDeleteModal}
               >
                 Annuler
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
                 onClick={confirmDelete}
               >
                 Supprimer

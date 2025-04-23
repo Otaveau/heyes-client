@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext'; // Assurez-vous que le chemin est correct
 
 export const CalendarNavigation = ({
   selectedYear,
@@ -13,6 +14,8 @@ export const CalendarNavigation = ({
   navigateToMonth,
   handleTodayClick
 }) => {
+  useTheme(); // Récupération de l'état du mode sombre
+  
   return (
     <div className="fc-custom-nav-container">
       <div className="fc-nav-row">
@@ -23,15 +26,17 @@ export const CalendarNavigation = ({
             className="fc-button fc-button-primary fc-prev-year-button"
             onClick={goToPreviousYear}
             title="Année précédente"
+            aria-label="Année précédente"
           >
             &laquo;
           </button>
-          <span className="fc-year-display">{selectedYear}</span>
+          <span className="fc-year-display text-gray-900 dark:text-gray-100">{selectedYear}</span>
           <button
             type="button"
             className="fc-button fc-button-primary fc-next-year-button"
             onClick={goToNextYear}
             title="Année suivante"
+            aria-label="Année suivante"
           >
             &raquo;
           </button>
@@ -40,6 +45,7 @@ export const CalendarNavigation = ({
             className="fc-button fc-button-primary fc-today-button"
             onClick={handleTodayClick}
             title="Aujourd'hui"
+            aria-label="Aujourd'hui"
           >
             Aujourd'hui
           </button>
@@ -47,17 +53,25 @@ export const CalendarNavigation = ({
 
         {/* Centre - Mois (visible dans toutes les vues) */}
         <div className="fc-months-nav">
-          {months.map((month, index) => (
-            <button
-              key={index}
-              type="button"
-              className="fc-button fc-button-primary fc-month-button"
-              onClick={() => navigateToMonth(index)}
-            >
-              <span className="month-full">{month}</span>
-              <span className="month-abbr">{month.substring(0, 3)}</span>
-            </button>
-          ))}
+          {months.map((month, index) => {
+            const isCurrentMonth = new Date().getMonth() === index && 
+                                  new Date().getFullYear() === selectedYear;
+            
+            return (
+              <button
+                key={index}
+                type="button"
+                className={`fc-button fc-button-primary fc-month-button ${
+                  isCurrentMonth ? 'fc-button-active' : ''
+                }`}
+                onClick={() => navigateToMonth(index)}
+                aria-label={month}
+              >
+                <span className="month-full">{month}</span>
+                <span className="month-abbr">{month.substring(0, 3)}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Boutons de navigation de semaine - Visible uniquement en vue semaine */}
@@ -70,12 +84,13 @@ export const CalendarNavigation = ({
                 goToPreviousWeek();
               }}
               title="Semaine précédente"
+              aria-label="Semaine précédente"
             >
               &lt;
             </button>
 
             {/* Affichage du numéro de semaine */}
-            <span className="fc-week-display">Semaine {currentWeekNumber}</span>
+            <span className="fc-week-display text-gray-900 dark:text-gray-100">Semaine {currentWeekNumber}</span>
 
             <button
               type="button"
@@ -84,6 +99,7 @@ export const CalendarNavigation = ({
                 goToNextWeek();
               }}
               title="Semaine suivante"
+              aria-label="Semaine suivante"
             >
               &gt;
             </button>
@@ -100,6 +116,8 @@ export const CalendarNavigation = ({
                 calendarRef.current.getApi().changeView('resourceTimelineYear');
               }
             }}
+            aria-label="Vue année"
+            aria-pressed={currentView === 'resourceTimelineYear'}
           >
             Année
           </button>
@@ -111,6 +129,8 @@ export const CalendarNavigation = ({
                 calendarRef.current.getApi().changeView('resourceTimelineMonth');
               }
             }}
+            aria-label="Vue mois"
+            aria-pressed={currentView === 'resourceTimelineMonth'}
           >
             Mois
           </button>
@@ -122,6 +142,8 @@ export const CalendarNavigation = ({
                 calendarRef.current.getApi().changeView('resourceTimelineWeek');
               }
             }}
+            aria-label="Vue semaine"
+            aria-pressed={currentView === 'resourceTimelineWeek'}
           >
             Semaine
           </button>
