@@ -10,7 +10,7 @@ const ConfirmationModal = ({
   confirmText = "Supprimer", 
   cancelText = "Annuler" 
 }) => {
-  const { darkMode } = useTheme();
+  useTheme();
   
   if (!isOpen) return null;
   

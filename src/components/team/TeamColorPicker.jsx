@@ -200,7 +200,7 @@ function normalizeHexColor(color) {
 
 // Composant principal du sélecteur de couleur
 const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
-  const { darkMode } = useTheme();
+  useTheme();
   const [selectedColor, setSelectedColor] = useState(() => normalizeHexColor(initialColor));
   const [inputColor, setInputColor] = useState(() => normalizeHexColor(initialColor));
   const pickerRef = useRef(null);
@@ -368,7 +368,7 @@ const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
 
 // Composant de portail qui rend le sélecteur de couleur à l'extérieur de la hiérarchie DOM
 export const TeamColorPicker = ({ isOpen, initialColor, onColorChange, onClose, referenceElement }) => {
-  const { darkMode } = useTheme();
+  useTheme();
   
   // Si le portail n'est pas ouvert, ne rien afficher
   if (!isOpen || typeof window === 'undefined') return null;

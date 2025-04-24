@@ -4,7 +4,7 @@ import { TeamCard } from './TeamCard';
 import { useTheme } from '../../context/ThemeContext';
 
 export const TeamList = ({ teams, selectedTeamId, onSelectTeam, onDeleteTeam, isLoading }) => {
-    const { darkMode } = useTheme();
+    useTheme();
 
     if (isLoading) {
       return (
