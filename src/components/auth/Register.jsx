@@ -7,7 +7,7 @@ import { Alert } from '../ui/alert';
 import { register } from '../../services/api/authService';
 
 const Register = () => {
-  const { darkMode } = useTheme();
+  useTheme();
   const [formData, setFormData] = useState({
     name: '',
     password: '',

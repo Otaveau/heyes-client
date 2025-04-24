@@ -8,7 +8,7 @@ import { Alert } from '../ui/alert';
 import { login } from '../../services/api/authService';
 
 const Login = () => {
-  const { darkMode } = useTheme();
+  useTheme();
   const [formData, setFormData] = useState({
     name: '',
     password: ''
