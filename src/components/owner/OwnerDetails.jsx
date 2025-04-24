@@ -3,6 +3,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Save } from 'lucide-react';
 import { OwnerForm } from './OwnerForm';
+import { useTheme } from '../../context/ThemeContext';
 
 export const OwnerDetails = ({ 
     owner, 
@@ -14,9 +15,11 @@ export const OwnerDetails = ({
     onSave, 
     onCancelEdit 
   }) => {
+    const { darkMode } = useTheme();
+    
     // Fonction pour obtenir la couleur de la team
     const getTeamColorById = useCallback((teamId) => {
-      if (!teamId) return '#9CA3AF';
+      if (!teamId) return darkMode ? '#6B7280' : '#9CA3AF';
       
       const parsedTeamId = typeof teamId === 'string' ? parseInt(teamId, 10) : teamId;
       
@@ -25,8 +28,8 @@ export const OwnerDetails = ({
         return currentTeamId === parsedTeamId;
       });
       
-      return team && team.color ? team.color : '#9CA3AF';
-    }, [teams]);
+      return team && team.color ? team.color : darkMode ? '#6B7280' : '#9CA3AF';
+    }, [teams, darkMode]);
   
     // Fonction pour obtenir le nom de la team
     const getTeamNameById = useCallback((teamId) => {
@@ -68,7 +71,7 @@ export const OwnerDetails = ({
             <div className="space-y-5">
               <div className="bg-gray-50 dark:bg-gray-600 p-3 rounded-md">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nom</p>
-                <p className="font-medium text-lg mt-1">{owner.name}</p>
+                <p className="font-medium text-lg mt-1 text-gray-800 dark:text-gray-100">{owner.name}</p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-600 p-3 rounded-md">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Team</p>
@@ -77,14 +80,16 @@ export const OwnerDetails = ({
                     className="w-4 h-4 rounded-full mr-2"
                     style={{ backgroundColor: teamColor }}
                   ></div>
-                  <p className="font-medium text-lg">{owner.teamName || getTeamNameById(owner.teamId || owner.team_id)}</p>
+                  <p className="font-medium text-lg text-gray-800 dark:text-gray-100">
+                    {owner.teamName || getTeamNameById(owner.teamId || owner.team_id)}
+                  </p>
                 </div>
               </div>
               
               <div className="pt-3 border-t border-gray-200 dark:border-gray-600">
                 <Button
                   onClick={onEdit}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4"
+                  className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white py-2 px-4 transition-colors"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   Modifier

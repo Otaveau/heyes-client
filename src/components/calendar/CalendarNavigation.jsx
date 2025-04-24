@@ -12,7 +12,9 @@ export const CalendarNavigation = ({
   goToPreviousWeek,
   goToNextWeek,
   navigateToMonth,
-  handleTodayClick
+  handleTodayClick,
+  // Ajoutez une nouvelle prop pour le mois actuellement affiché
+  displayedMonth
 }) => {
   useTheme(); // Récupération de l'état du mode sombre
   
@@ -54,15 +56,15 @@ export const CalendarNavigation = ({
         {/* Centre - Mois (visible dans toutes les vues) */}
         <div className="fc-months-nav">
           {months.map((month, index) => {
-            const isCurrentMonth = new Date().getMonth() === index && 
-                                  new Date().getFullYear() === selectedYear;
+            // Utilisez displayedMonth au lieu de comparer avec la date actuelle
+            const isSelectedMonth = displayedMonth === index;
             
             return (
               <button
                 key={index}
                 type="button"
                 className={`fc-button fc-button-primary fc-month-button ${
-                  isCurrentMonth ? 'fc-button-active' : ''
+                  isSelectedMonth ? 'fc-button-active' : ''
                 }`}
                 onClick={() => navigateToMonth(index)}
                 aria-label={month}

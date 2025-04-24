@@ -5,8 +5,12 @@ import ConfirmationModal from '../ui/confirmationModal';
 import { OwnerList } from './OwnerList';
 import { OwnerDetails } from './OwnerDetails';
 import { OwnerForm } from './OwnerForm';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function OwnerManagement() {
+  // Accès au contexte de thème
+  const { darkMode } = useTheme();
+  
   // États
   const [owners, setOwners] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -240,7 +244,7 @@ export default function OwnerManagement() {
 
   return (
     <div className="p-8 min-h-screen w-full md:w-4/5 lg:w-3/4 mx-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-3xl text-center font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700">Gestion des owners</h2>
+      <h2 className="text-3xl text-center font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">Gestion des owners</h2>
 
       {/* Formulaire d'ajout de owner */}
       <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm mb-10">
@@ -260,7 +264,7 @@ export default function OwnerManagement() {
         <div className={`space-y-6 ${!selectedOwner ? 'max-w-2xl w-full' : ''}`}>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Liste des owners</h3>
-            <div className="bg-blue-50 text-blue-700 text-sm py-1 px-3 rounded-full font-medium">
+            <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm py-1 px-3 rounded-full font-medium">
               {owners.length} {owners.length > 1 ? 'owners' : 'owner'}
             </div>
           </div>

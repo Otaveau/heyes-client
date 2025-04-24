@@ -2,7 +2,7 @@ import React, { useCallback} from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Trash2, Loader2, } from 'lucide-react';
-
+import { useTheme } from '../../context/ThemeContext';
 
 export const OwnerList = ({ 
     owners, 
@@ -12,9 +12,11 @@ export const OwnerList = ({
     onSelect, 
     onDelete 
   }) => {
+    const { darkMode } = useTheme();
+
     // Fonction pour obtenir la couleur de la team
     const getTeamColorById = useCallback((teamId) => {
-      if (!teamId) return '#9CA3AF'; // Couleur grise par défaut
+      if (!teamId) return darkMode ? '#6B7280' : '#9CA3AF'; // Couleur grise adaptative
       
       const parsedTeamId = typeof teamId === 'string' ? parseInt(teamId, 10) : teamId;
       
@@ -23,8 +25,8 @@ export const OwnerList = ({
         return currentTeamId === parsedTeamId;
       });
       
-      return team && team.color ? team.color : '#9CA3AF';
-    }, [teams]);
+      return team && team.color ? team.color : darkMode ? '#6B7280' : '#9CA3AF';
+    }, [teams, darkMode]);
   
     // Fonction pour obtenir le nom de la team
     const getTeamNameById = useCallback((teamId) => {
@@ -43,7 +45,7 @@ export const OwnerList = ({
     if (isLoading) {
       return (
         <div className="flex justify-center items-center py-16 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+          <Loader2 className="h-10 w-10 animate-spin text-blue-500 dark:text-blue-400" />
         </div>
       );
     }
@@ -73,9 +75,9 @@ export const OwnerList = ({
           return (
             <Card
               key={ownerId}
-              className={`p-0 cursor-pointer transition-all duration-200 hover:shadow-md overflow-hidden ${
-                isSelected ? 'shadow-md' : ''
-              }`}
+              className={`p-0 cursor-pointer transition-all duration-200 hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-gray-900/30 overflow-hidden ${
+                isSelected ? 'shadow-md dark:shadow-lg dark:shadow-gray-900/30 ring-2 ring-blue-500 dark:ring-blue-600' : ''
+              } bg-white dark:bg-gray-700`}
               onClick={() => onSelect(owner)}
             >
               <div className="flex">
@@ -88,7 +90,7 @@ export const OwnerList = ({
                 <div className="flex-1 p-5">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-lg">{owner.name}</h3>
+                      <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">{owner.name}</h3>
                       <div className="mt-2 flex items-center">
                         {/* Pastille de couleur de team */}
                         <div 
@@ -107,7 +109,7 @@ export const OwnerList = ({
                         e.stopPropagation();
                         onDelete(owner);
                       }}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-full"
                     >
                       <Trash2 className="h-5 w-5" />
                     </Button>
