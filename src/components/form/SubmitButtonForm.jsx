@@ -5,7 +5,7 @@ export const SubmitButton = ({ isSubmitting, isEditMode }) => (
     <button
       type="submit"
       disabled={isSubmitting}
-      className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center"
+      className="px-4 py-1.5 bg-blue-600 dark:bg-blue-700 text-white text-sm rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 disabled:bg-blue-300 dark:disabled:bg-blue-800/50 dark:disabled:text-blue-100/70 flex items-center transition-colors"
     >
       {isSubmitting ? (
         <>

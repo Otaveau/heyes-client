@@ -4,6 +4,7 @@ import { ERROR_MESSAGES } from '../../constants/constants';
 import { formatDateForInput, isHoliday, isWeekend } from '../../utils/DateUtils';
 import { DeleteConfirmationModal, ErrorMessage, WarningMessage } from './MessageForm';
 import { SubmitButton } from './SubmitButtonForm';
+import { useTheme } from '../../context/ThemeContext';
 
 export const TaskForm = ({
     isOpen,
@@ -16,6 +17,7 @@ export const TaskForm = ({
     onSubmit: handleTaskSubmit,
     onDeleteTask
 }) => {
+    const { darkMode } = useTheme();
 
     // Initialisation du formulaire
     const getInitialFormData = useCallback(() => {
@@ -373,17 +375,17 @@ export const TaskForm = ({
       onClick={handleBackdropClick}
     >
       {/* Formulaire principal */}
-      <div className={`bg-white p-0 rounded-lg w-[420px] relative max-h-[90vh] overflow-y-auto ${showDeleteConfirmation ? 'opacity-40 pointer-events-none' : ''}`}>
+      <div className={`bg-white dark:bg-gray-800 p-0 rounded-lg w-[420px] relative max-h-[90vh] overflow-y-auto ${showDeleteConfirmation ? 'opacity-40 pointer-events-none' : ''}`}>
         {/* En-tête du formulaire */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-lg">
+        <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700 rounded-t-lg">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-800">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
               {selectedTask ? 'Modifier la tâche' : 'Nouvelle tâche'}
             </h2>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 focus:outline-none"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
               aria-label="Fermer"
             >
               <X size={20} />
@@ -394,7 +396,7 @@ export const TaskForm = ({
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-5">
             {/* Option congé */}
-            <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+            <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
               <input
                 type="checkbox"
                 id="isConge"
@@ -403,15 +405,15 @@ export const TaskForm = ({
                 onChange={handleChange}
                 className="h-4 w-4 text-blue-600 rounded"
               />
-              <label htmlFor="isConge" className="text-blue-800 font-medium">
+              <label htmlFor="isConge" className="text-blue-800 dark:text-blue-300 font-medium">
                 Marquer comme congé
               </label>
             </div>
 
             {/* Titre */}
             <div className="space-y-1.5">
-              <label htmlFor="title" className="flex items-center text-sm font-medium text-gray-700">
-                <Type size={16} className="mr-2 text-gray-500" />
+              <label htmlFor="title" className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Type size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                 Titre
               </label>
               <input
@@ -420,7 +422,7 @@ export const TaskForm = ({
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className='w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500'
+                className='w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-500 dark:disabled:text-gray-400 dark:bg-gray-700 dark:text-white'
                 disabled={formData.isConge}
                 required
                 placeholder="Titre de la tâche"
@@ -430,8 +432,8 @@ export const TaskForm = ({
 
             {/* Description */}
             <div className="space-y-1.5">
-              <label htmlFor="description" className="flex items-center text-sm font-medium text-gray-700">
-                <FileText size={16} className="mr-2 text-gray-500" />
+              <label htmlFor="description" className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                <FileText size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                 Description
               </label>
               <textarea
@@ -439,7 +441,7 @@ export const TaskForm = ({
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 rows="3"
                 placeholder="Description optionnelle"
               />
@@ -447,8 +449,8 @@ export const TaskForm = ({
 
             {/* Statut */}
             <div className="space-y-1.5">
-              <label htmlFor="statusId" className="flex items-center text-sm font-medium text-gray-700">
-                <Tag size={16} className="mr-2 text-gray-500" />
+              <label htmlFor="statusId" className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Tag size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                 Statut
               </label>
               <div className="relative">
@@ -457,7 +459,7 @@ export const TaskForm = ({
                   name="statusId"
                   value={formData.statusId}
                   onChange={handleChange}
-                  className='w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500'
+                  className='w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-500 dark:disabled:text-gray-400 dark:bg-gray-700 dark:text-white'
                   required={!formData.isConge}
                   disabled={formData.resourceId !== '' || formData.isConge}
                 >
@@ -478,8 +480,8 @@ export const TaskForm = ({
 
             {/* Assigné à */}
             <div className="space-y-1.5">
-              <label htmlFor="resourceId" className="flex items-center text-sm font-medium text-gray-700">
-                <User size={16} className="mr-2 text-gray-500" />
+              <label htmlFor="resourceId" className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                <User size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                 Assigné à{isWipStatus || formData.isConge ? ' *' : ''}
               </label>
               <select
@@ -487,7 +489,7 @@ export const TaskForm = ({
                 name="resourceId"
                 value={formData.resourceId}
                 onChange={handleChange}
-                className="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 required={isWipStatus || formData.isConge}
               >
                 <option value="">Sélectionner une ressource</option>
@@ -502,13 +504,13 @@ export const TaskForm = ({
 
             {/* Dates */}
             <div className="space-y-1.5">
-              <label className="flex items-center text-sm font-medium text-gray-700">
-                <Calendar size={16} className="mr-2 text-gray-500" />
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Calendar size={16} className="mr-2 text-gray-500 dark:text-gray-400" />
                 Période{isWipStatus || formData.resourceId ? ' *' : ''}
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="startDate" className="block text-xs text-gray-500 mb-1">
+                  <label htmlFor="startDate" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Date de début
                   </label>
                   <input
@@ -517,18 +519,18 @@ export const TaskForm = ({
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     required={isWipStatus || !!formData.resourceId}
                   />
                   {errors.startDate ? (
-                <div className="text-red-600 text-sm font-medium mt-1.5 p-1.5 bg-red-50 border border-red-200 rounded-md">
+                <div className="text-red-600 dark:text-red-400 text-sm font-medium mt-1.5 p-1.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                   {errors.startDate}
                 </div>
               ) : null}
                 </div>
 
                 <div>
-                  <label htmlFor="endDate" className="block text-xs text-gray-500 mb-1">
+                  <label htmlFor="endDate" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Date de fin
                   </label>
                   <input
@@ -537,12 +539,12 @@ export const TaskForm = ({
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     required={isWipStatus || !!formData.resourceId}
                     min={formData.startDate}
                   />
                   {errors.endDate ? (
-                <div className="text-red-600 text-sm font-medium mt-1.5 p-1.5 bg-red-50 border border-red-200 rounded-md">
+                <div className="text-red-600 dark:text-red-400 text-sm font-medium mt-1.5 p-1.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                   {errors.endDate}
                 </div>
               ) : null}
@@ -552,14 +554,14 @@ export const TaskForm = ({
 
             {/* Message d'erreur global */}
             {errors.submit && (
-              <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-md text-sm">
                 {errors.submit}
               </div>
             )}
           </div>
 
           {/* Barre d'actions au bas du formulaire */}
-          <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg flex justify-between items-center">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900 rounded-b-lg flex justify-between items-center">
             {/* Boutons de gauche */}
             <div>
               {isEditMode && onDeleteTask && (
@@ -567,7 +569,7 @@ export const TaskForm = ({
                   type="button"
                   onClick={handleDeleteClick}
                   disabled={isSubmitting}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium flex items-center"
+                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium flex items-center"
                 >
                   <Trash2 size={16} className="mr-1" />
                   Supprimer
@@ -581,7 +583,7 @@ export const TaskForm = ({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-100"
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 Annuler
               </button>

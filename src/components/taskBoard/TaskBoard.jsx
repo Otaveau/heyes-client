@@ -284,17 +284,18 @@ export const TaskBoard = ({
   return (
     <>
       <div className="taskboard-container-wrapper">
-        <div className="taskboard-header">
-          <h2 className="taskboard-title">Taskboard</h2>
+        {/* Header modifié avec Tailwind */}
+        <div className="flex justify-between items-center p-4 mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Taskboard</h2>
 
           {onCreateTask && (
-            <Button
+            <button
               onClick={onCreateTask}
-              className="task-create-button"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors shadow-sm"
             >
-              <Plus className="h-5.5 w-5.5" strokeWidth={2.5} />
+              <Plus className="h-5 w-5" strokeWidth={2.5} />
               <span>Nouvelle tâche</span>
-            </Button>
+            </button>
           )}
         </div>
 
