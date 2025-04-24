@@ -17,7 +17,7 @@ export const TaskForm = ({
     onSubmit: handleTaskSubmit,
     onDeleteTask
 }) => {
-    const { darkMode } = useTheme();
+    useTheme();
 
     // Initialisation du formulaire
     const getInitialFormData = useCallback(() => {

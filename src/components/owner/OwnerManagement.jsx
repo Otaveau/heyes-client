@@ -9,7 +9,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 export default function OwnerManagement() {
   // Accès au contexte de thème
-  const { darkMode } = useTheme();
+  useTheme();
   
   // États
   const [owners, setOwners] = useState([]);

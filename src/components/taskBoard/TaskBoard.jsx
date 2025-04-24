@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
-import { Button } from '../ui/button';
 import { getInclusiveEndDate } from '../../utils/DateUtils';
 import { addTaskAppearEffect, addDropzonePulseEffect } from '../../utils/DndUtils';
 import { useTheme } from '../../context/ThemeContext';
@@ -20,7 +19,7 @@ export const TaskBoard = ({
   const [taskToDelete, setTaskToDelete] = useState(null);
   const draggablesRef = useRef([]);
   const [activeDropZone, setActiveDropZone] = useState(null);
-  const { darkMode } = useTheme();
+  useTheme();
 
   // Créer des références locales si aucune n'est fournie
   const internalRefs = useRef([]);
