@@ -165,7 +165,7 @@ export default function Navigation() {
               <div className="flex-shrink-0 flex items-center">
                 <Link to="/calendar" className="flex items-center" aria-label="Accueil">
                   <img src={logoImage} alt="Logo Heyes" className="h-10 w-auto" />
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white ml-1">Eyes</span>
+                  <span className="text-2xl font-bold ml-1 dark:text-white style={{ color: 'rgb(0 33 105)' }}">Eyes</span>
                 </Link>
               </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
+import { Trash2, ArrowLeft, ArrowRight, Plus, MoveRight, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
 import { getInclusiveEndDate } from '../../utils/DateUtils';
 import { addTaskAppearEffect, addDropzonePulseEffect } from '../../utils/DndUtils';
@@ -282,10 +282,15 @@ export const TaskBoard = ({
 
   return (
     <>
-      <div className="taskboard-container-wrapper">
+      <div className="taskboard-container-wrapper mr-[15px]">
         {/* Header modifié avec Tailwind */}
         <div className="flex justify-between items-center p-4 mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Taskboard</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+            <span className="relative">
+              Taskboard
+              <span className="absolute -bottom-1 left-0 w-full h-1 bg-blue-500 dark:bg-blue-600 rounded-full"></span>
+            </span>
+          </h2>
 
           {onCreateTask && (
             <button
@@ -349,12 +354,32 @@ export const TaskBoard = ({
                 data-zone-id={zone.id}
                 data-dropzone-id={zone.id}
               >
-                <h3 className={`mb-4 font-bold ${
+                <h3 className={`mb-4 font-bold text-lg flex items-center border-b pb-2 ${
                   isInProgressZone 
-                    ? 'text-blue-700 dark:text-blue-400' 
-                    : 'text-gray-700 dark:text-gray-300'
+                    ? 'text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700' 
+                    : 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
                 }`}>
+                  {/* Icônes plus appropriées pour chaque statut */}
+                  {zone.title.toLowerCase().includes('entrant') && (
+                    <MoveRight className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {zone.title.toLowerCase().includes('cours') && (
+                    <Clock className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {zone.title.toLowerCase().includes('attente') && (
+                    <AlertCircle className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {zone.title.toLowerCase().includes('done') && (
+                    <CheckCircle className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {/* Icône par défaut si aucun des cas ci-dessus ne correspond */}
+                  {!['entrant', 'cours', 'attente', 'done'].some(term => zone.title.toLowerCase().includes(term)) && (
+                    <Plus className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
                   {zone.title}
+                  <span className="ml-2 text-sm font-normal bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-0.5">
+                    {zoneTasks.length}
+                  </span>
                 </h3>
                 {zoneTasks.map(task => {
                   // Vérifier si c'est un congé

@@ -300,7 +300,7 @@
 .dark .fc-timegrid-body,
 .dark .fc-resource-timeline-divider,
 .dark .fc-timeline-body {
-    background-color: #111827 !important;
+    background-color: #111827;
 }
 
 /* Cellules du tableau */
@@ -354,6 +354,12 @@
     background-color: #7f1d1d !important;
 }
 
+
+  /* Style pour les lanes de ressources */
+.dark .resource-team-lane .fc-timeline-lane-frame {
+    background-color: #1f2937 !important;
+    cursor: not-allowed;
+  }
 
 /* ===================================
  * 7. Jours spéciaux - Mode sombre
