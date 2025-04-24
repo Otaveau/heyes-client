@@ -6,10 +6,10 @@ import { TeamAddForm } from './TeamAddForm';
 import { TeamEditForm } from './TeamEditForm';
 import { TeamList } from './TeamList';
 import { TeamDetails } from './TeamDetails';
-
-
+import { useTheme } from '../../context/ThemeContext';
 
 export default function TeamManagement() {
+  const { darkMode } = useTheme();
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -159,7 +159,7 @@ export default function TeamManagement() {
 
   return (
     <div className="p-8 min-h-screen w-full md:w-4/5 lg:w-3/4 mx-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-3xl text-center font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700">
+      <h2 className="text-3xl text-center font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
         Gestion des équipes
       </h2>
 
@@ -183,7 +183,7 @@ export default function TeamManagement() {
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
               Liste des équipes
             </h3>
-            <div className="bg-blue-50 text-blue-700 text-sm py-1 px-3 rounded-full font-medium">
+            <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm py-1 px-3 rounded-full font-medium">
               {teams.length} {teams.length > 1 ? 'équipes' : 'équipe'}
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function TeamManagement() {
               {/* Bande de couleur en haut de la carte */}
               <div 
                 className="h-2 -mx-6 -mt-6 mb-5"
-                style={{ backgroundColor: selectedTeam.color || '#000000' }}
+                style={{ backgroundColor: selectedTeam.color || (darkMode ? '#3B82F6' : '#000000') }}
               ></div>
 
               {editMode ? (

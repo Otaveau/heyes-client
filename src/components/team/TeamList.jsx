@@ -1,13 +1,15 @@
 import { Loader2, Trash2 } from 'lucide-react';
 import React from 'react';
 import { TeamCard } from './TeamCard';
-
+import { useTheme } from '../../context/ThemeContext';
 
 export const TeamList = ({ teams, selectedTeamId, onSelectTeam, onDeleteTeam, isLoading }) => {
+    const { darkMode } = useTheme();
+
     if (isLoading) {
       return (
-        <div className="flex justify-center items-center py-16 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+        <div className="flex justify-center items-center py-16 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-500 dark:text-blue-400" />
         </div>
       );
     }
@@ -19,7 +21,7 @@ export const TeamList = ({ teams, selectedTeamId, onSelectTeam, onDeleteTeam, is
             <div className="p-3 bg-gray-100 dark:bg-gray-600 rounded-full">
               <Trash2 className="h-8 w-8 text-gray-400 dark:text-gray-300" />
             </div>
-            <p className="font-medium">Aucune équipe disponible</p>
+            <p className="font-medium dark:text-gray-300">Aucune équipe disponible</p>
             <p className="text-sm">Utilisez le formulaire ci-dessus pour créer votre première équipe</p>
           </div>
         </div>
@@ -30,14 +32,11 @@ export const TeamList = ({ teams, selectedTeamId, onSelectTeam, onDeleteTeam, is
       <div className="grid gap-4 sm:grid-cols-1">
         {teams.map(team => (
           <TeamCard 
-            key={team.team_id}
+            key={team.team_id || team.id}
             team={team}
-            isSelected={selectedTeamId === team.team_id}
+            isSelected={selectedTeamId === (team.team_id || team.id)}
             onSelect={() => onSelectTeam(team)}
-            onDelete={(e) => {
-              e.stopPropagation();
-              onDeleteTeam(team);
-            }}
+            onDelete={() => onDeleteTeam(team)}
           />
         ))}
       </div>

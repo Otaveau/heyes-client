@@ -3,12 +3,14 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { useTheme } from '../../context/ThemeContext';
 
 // Composant pour le sélecteur de couleur à spectre complet
 const ColorSpectrum = ({ onChange, currentColor }) => {
   const canvasRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState({ x: 0, y: 0 });
+  const { darkMode } = useTheme();
 
   // Initialiser le spectre et le positionnement du sélecteur
   useEffect(() => {
@@ -151,7 +153,7 @@ const ColorSpectrum = ({ onChange, currentColor }) => {
         style={{
           left: `${selectedPoint.x}px`,
           top: `${selectedPoint.y}px`,
-          boxShadow: '0 0 0 1px rgba(0,0,0,0.3)'
+          boxShadow: darkMode ? '0 0 0 1px rgba(255,255,255,0.5)' : '0 0 0 1px rgba(0,0,0,0.3)'
         }}
         key="color-selector-indicator"
       />
@@ -198,6 +200,7 @@ function normalizeHexColor(color) {
 
 // Composant principal du sélecteur de couleur
 const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
+  const { darkMode } = useTheme();
   const [selectedColor, setSelectedColor] = useState(() => normalizeHexColor(initialColor));
   const [inputColor, setInputColor] = useState(() => normalizeHexColor(initialColor));
   const pickerRef = useRef(null);
@@ -285,7 +288,7 @@ const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-7 w-7 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={onClose}
           type="button"
         >
@@ -314,21 +317,21 @@ const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
           type="color"
           value={selectedColor}
           onChange={handleNativeColorChange}
-          className="w-14 h-14 p-1 cursor-pointer" // Augmenté de w-10 h-10 à w-14 h-14
+          className="w-14 h-14 p-1 cursor-pointer bg-transparent dark:bg-transparent" // Ajouté bg-transparent
         />
         <div className="flex-1 relative">
-          <label htmlFor="hexColor" className="block text-xs text-gray-500 mb-1">Code hexadécimal</label>
+          <label htmlFor="hexColor" className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Code hexadécimal</label>
           <Input
             id="hexColor"
             type="text"
             value={inputColor}
             onChange={handleInputChange}
             placeholder="#RRGGBB"
-            className={`w-full pl-2 ${!isValidHex(inputColor) && inputColor !== '' ? 'border-red-500' : ''}`}
+            className={`w-full pl-2 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 ${!isValidHex(inputColor) && inputColor !== '' ? 'border-red-500 dark:border-red-500' : ''}`}
           />
           {isValidHex(inputColor) && (
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <Check className="h-4 w-4 text-green-500" />
+              <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
             </div>
           )}
         </div>
@@ -353,7 +356,7 @@ const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
             onClose();
           }}
           type="button"
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md transition-all duration-200 font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:outline-none"
+          className="px-5 py-2.5 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white shadow-sm hover:shadow-md transition-all duration-200 font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:outline-none"
         >
           <Check className="h-4 w-4 mr-2" />
           Appliquer
@@ -365,6 +368,8 @@ const ColorPickerContent = ({ initialColor, onColorChange, onClose }) => {
 
 // Composant de portail qui rend le sélecteur de couleur à l'extérieur de la hiérarchie DOM
 export const TeamColorPicker = ({ isOpen, initialColor, onColorChange, onClose, referenceElement }) => {
+  const { darkMode } = useTheme();
+  
   // Si le portail n'est pas ouvert, ne rien afficher
   if (!isOpen || typeof window === 'undefined') return null;
 

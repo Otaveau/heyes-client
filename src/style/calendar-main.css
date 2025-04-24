@@ -395,7 +395,7 @@
   
   /* Style pour les lanes de ressources */
   .resource-team-lane {
-    background-color: var(--color-bg-hover);
+    background-color: var(--color-bg-hover)!important;
     cursor: not-allowed;
   }
   
