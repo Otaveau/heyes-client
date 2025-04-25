@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import { createTask, updateTask, deleteTask } from '../services/api/taskService';
+import taskService from '../services/api/taskService';
 import { hasValidEventBoundaries } from '../utils/DateUtils';
 
 /**
@@ -118,7 +118,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
       // Appel API si nécessaire
       let apiResponse = completeUpdates;
       if (!skipApiCall) {
-        apiResponse = await updateTask(taskId, completeUpdates);
+        apiResponse = await taskService.updateTask(taskId, completeUpdates);
       }
 
       if (successMessage) {
@@ -216,7 +216,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
         };
 
         // Mettre à jour la tâche
-        await updateTask(formData.id, updates);
+        await taskService.updateTask(formData.id, updates);
         updateTaskStatus(formData.id, updates);
         
         toast.warning("Tâche non modifiée - Un propriétaire et des dates sont requis pour les tâches en cours", TOAST_CONFIG);
@@ -255,7 +255,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
       
       if (isNewTask) {
         // Création d'une nouvelle tâche
-        result = await createTask(taskData);
+        result = await taskService.createTask(taskData);
         const newTask = {
           id: result.id,
           ...taskData,
@@ -267,7 +267,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
       } else {
         // Mise à jour d'une tâche existante
         updateTaskStatus(formData.id, taskData);
-        result = await updateTask(formData.id, taskData);
+        result = await taskService.updateTask(formData.id, taskData);
         toast.success('Tâche mise à jour', TOAST_CONFIG);
       }
 
@@ -297,7 +297,7 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
       setTasks(prevTasks => prevTasks.filter(task => task.id.toString() !== taskId.toString()));
       
       // Puis supprimer sur le serveur
-      await deleteTask(taskId);
+      await taskService.deleteTask(taskId);
       
       toast.success('Tâche supprimée', TOAST_CONFIG);
       return true;

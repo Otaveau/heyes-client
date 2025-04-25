@@ -1,8 +1,14 @@
-import { fetchWithTimeout, getAuthHeaders } from '../apiUtils/apiConfig';
-import { handleResponse } from '../apiUtils/errorHandlers';
+import { createApiClient } from './apiClient';
 import { ERROR_MESSAGES } from '../../constants/constants';
 
+// Création d'une instance API pour les opérations sur les tâches
+const api = createApiClient();
 
+/**
+ * Transforme les données de tâche pour l'envoi au serveur
+ * @param {Object} taskData - Données de la tâche à transformer
+ * @returns {Object} Données formatées pour le serveur
+ */
 const transformTaskForServer = (taskData) => {
     const statusId = taskData.statusId || taskData.extendedProps?.statusId;
     let startDate = taskData.start || taskData.startDate;
@@ -51,6 +57,11 @@ const transformTaskForServer = (taskData) => {
     };
 };
 
+/**
+ * Transforme la réponse du serveur en objet de tâche pour le client
+ * @param {Object} serverResponse - Données de tâche reçues du serveur
+ * @returns {Object|null} Tâche formatée pour le client ou null si données invalides
+ */
 const transformServerResponseToTask = (serverResponse) => {
     if (!serverResponse || typeof serverResponse !== 'object') {
         console.warn('Données invalides reçues pour transformation de tâche');
@@ -114,7 +125,11 @@ const transformServerResponseToTask = (serverResponse) => {
     };
 };
 
-
+/**
+ * Valide les données de tâche avant envoi au serveur
+ * @param {Object} taskData - Données de tâche à valider
+ * @throws {Error} Si les données sont invalides
+ */
 const validateTaskData = (taskData) => {
     if (!taskData) throw new Error(ERROR_MESSAGES.TASK_DATA_REQUIRED);
     if (!taskData.title?.trim()) throw new Error(ERROR_MESSAGES.TITLE_REQUIRED);
@@ -146,82 +161,85 @@ const validateTaskData = (taskData) => {
     }
 };
 
-export const fetchTasks = async () => {
-    try {
-        const response = await fetchWithTimeout('/api/tasks', {
-            headers: getAuthHeaders()
-        });
-
-        const dataFromServer = await handleResponse(response);
-        const transformedTasks = dataFromServer.map(transformServerResponseToTask);
-        return transformedTasks;
-    } catch (error) {
-        console.error('Erreur lors de la récupération des tâches:', error);
-        throw error;
-    }
+/**
+ * Récupère toutes les tâches
+ * @returns {Promise<Array>} Liste des tâches formatée
+ */
+const getAll = async () => {
+    const dataFromServer = await api.get('/api/tasks');
+    return dataFromServer.map(transformServerResponseToTask).filter(Boolean);
 };
 
-export const createTask = async (taskData) => {
-    try {
-        validateTaskData(taskData);
-        const dataToServer = transformTaskForServer(taskData);
-
-        const response = await fetchWithTimeout('/api/tasks', {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(dataToServer)
-        });
-
-        const dataFromServer = await handleResponse(response);
-        // Transforme et retourne un tableau, même pour une création unique
-        const transformedTasks = [transformServerResponseToTask(dataFromServer)]
-            .filter(task => task !== null);
-        return transformedTasks[0] || null;
-    } catch (error) {
-        console.error('Erreur lors de la création de la tâche:', error);
-        throw error;
-    }
+/**
+ * Récupère une tâche par son ID
+ * @param {string|number} id - ID de la tâche
+ * @returns {Promise<Object>} Tâche formatée
+ */
+const getById = async (id) => {
+    if (!id) throw new Error(ERROR_MESSAGES.TASK_ID_REQUIRED);
+    
+    const dataFromServer = await api.get(`/api/tasks/${id}`);
+    return transformServerResponseToTask(dataFromServer);
 };
 
-export const updateTask = async (id, taskData) => {
-    try {
-        validateTaskData(taskData);
-        const taskId = parseInt(id);
-        if (isNaN(taskId)) throw new Error(ERROR_MESSAGES.TASK_ID_REQUIRED);
-
-        const dataToServer = transformTaskForServer(taskData);
-
-        const response = await fetchWithTimeout(`/api/tasks/${taskId}`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(dataToServer)
-        });
-
-        const dataFromServer = await handleResponse(response);
-
-        // Transforme et retourne un tableau, même pour une mise à jour unique
-        const transformedTasks = [transformServerResponseToTask(dataFromServer)]
-            .filter(task => task !== null);
-
-        return transformedTasks[0] || null;
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour de la tâche:', error);
-        throw error;
-    }
+/**
+ * Crée une nouvelle tâche
+ * @param {Object} taskData - Données de la tâche à créer
+ * @returns {Promise<Object>} Tâche créée et formatée
+ */
+const create = async (taskData) => {
+    validateTaskData(taskData);
+    const dataToServer = transformTaskForServer(taskData);
+    
+    const dataFromServer = await api.post('/api/tasks', dataToServer);
+    return transformServerResponseToTask(dataFromServer);
 };
 
-export const deleteTask = async (id) => {
-    try {
-        if (!id) throw new Error(ERROR_MESSAGES.TASK_ID_REQUIRED);
-
-        const response = await fetchWithTimeout(`/api/tasks/${id}`, {
-            method: 'DELETE',
-            headers: getAuthHeaders()
-        });
-
-        return handleResponse(response);
-    } catch (error) {
-        console.error(error, 'la suppression de la tâche');
-        throw error;
-    }
+/**
+ * Met à jour une tâche existante
+ * @param {string|number} id - ID de la tâche
+ * @param {Object} taskData - Nouvelles données de la tâche
+ * @returns {Promise<Object>} Tâche mise à jour et formatée
+ */
+const update = async (id, taskData) => {
+    validateTaskData(taskData);
+    const taskId = parseInt(id);
+    if (isNaN(taskId)) throw new Error(ERROR_MESSAGES.TASK_ID_REQUIRED);
+    
+    const dataToServer = transformTaskForServer(taskData);
+    
+    const dataFromServer = await api.put(`/api/tasks/${taskId}`, dataToServer);
+    return transformServerResponseToTask(dataFromServer);
 };
+
+/**
+ * Supprime une tâche
+ * @param {string|number} id - ID de la tâche à supprimer
+ * @returns {Promise<Object>} Confirmation de suppression
+ */
+const remove = async (id) => {
+    if (!id) throw new Error(ERROR_MESSAGES.TASK_ID_REQUIRED);
+    
+    return api.delete(`/api/tasks/${id}`);
+};
+
+// Création d'un objet de service pour faciliter l'utilisation
+const taskService = {
+    getAll,
+    getById,
+    create,
+    update,
+    delete: remove,
+    // Maintien de la compatibilité avec l'ancien code
+    fetchTasks: getAll,
+    createTask: create,
+    updateTask: update,
+    deleteTask: remove,
+    // Expose les fonctions utilitaires pour utilisation externe si nécessaire
+    transformTaskForServer,
+    transformServerResponseToTask,
+    validateTaskData
+};
+
+// Export de l'objet de service
+export default taskService;

@@ -1,74 +1,95 @@
-import { fetchWithTimeout, getAuthHeaders } from '../apiUtils/apiConfig';
-import { handleResponse } from '../apiUtils/errorHandlers';
+import { createApiClient } from './apiClient';
 
+// Création d'une instance API pour les opérations sur les équipes
+const api = createApiClient();
+
+/**
+ * Valide les données d'équipe avant envoi au serveur
+ * @param {Object} teamData - Données d'équipe à valider
+ * @throws {Error} Si les données sont invalides
+ */
 const validateTeamData = (teamData) => {
     if (!teamData) throw new Error('Données d\'équipe requises');
     if (!teamData.name?.trim()) throw new Error('Nom d\'équipe requis');
 };
 
-export const fetchTeams = async () => {
-    try {
-        // Utiliser directement le chemin sans API_URL
-        const response = await fetchWithTimeout('/api/teams', {
-            headers: getAuthHeaders()
-        });
-        return handleResponse(response);
-    } catch (error) {
-        console.error('Erreur lors de la récupération des équipes:', error);
-        throw error;
-    }
+/**
+ * Récupère toutes les équipes
+ * @returns {Promise<Array>} Liste des équipes
+ */
+const getAll = async () => {
+    return api.get('/api/teams');
 };
 
-export const createTeam = async (teamData) => {
-    try {
-        validateTeamData(teamData);
-
-        const response = await fetchWithTimeout('/api/teams', {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-                name: teamData.name.trim(),
-                color: teamData.color
-            })
-        });
-        return handleResponse(response);
-    } catch (error) {
-        console.error('Erreur lors de la création de l\'équipe:', error);
-        throw error;
-    }
+/**
+ * Récupère une équipe par son ID
+ * @param {string|number} id - ID de l'équipe
+ * @returns {Promise<Object>} Données de l'équipe
+ */
+const getById = async (id) => {
+    if (!id) throw new Error('ID d\'équipe requis');
+    
+    return api.get(`/api/teams/${id}`);
 };
 
-export const updateTeam = async (id, teamData) => {
-    try {
-        if (!id) throw new Error('ID d\'équipe requis');
-        validateTeamData(teamData);
-
-        const response = await fetchWithTimeout(`/api/teams/${id}`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-                name: teamData.name.trim(),
-                color: teamData.color
-            })
-        });
-        return handleResponse(response);
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'équipe:', error);
-        throw error;
-    }
+/**
+ * Crée une nouvelle équipe
+ * @param {Object} teamData - Données de l'équipe à créer
+ * @param {string} teamData.name - Nom de l'équipe
+ * @param {string} [teamData.color] - Couleur de l'équipe (code hexadécimal)
+ * @returns {Promise<Object>} Données de l'équipe créée
+ */
+const create = async (teamData) => {
+    validateTeamData(teamData);
+    
+    return api.post('/api/teams', {
+        name: teamData.name.trim(),
+        color: teamData.color
+    });
 };
 
-export const deleteTeam = async (id) => {
-    try {
-        if (!id) throw new Error('ID d\'équipe requis');
-
-        const response = await fetchWithTimeout(`/api/teams/${id}`, {
-            method: 'DELETE',
-            headers: getAuthHeaders()
-        });
-        return handleResponse(response);
-    } catch (error) {
-        console.error('Erreur lors de la suppression de l\'équipe:', error);
-        throw error;
-    }
+/**
+ * Met à jour une équipe existante
+ * @param {string|number} id - ID de l'équipe
+ * @param {Object} teamData - Nouvelles données de l'équipe
+ * @param {string} teamData.name - Nom de l'équipe
+ * @param {string} [teamData.color] - Couleur de l'équipe (code hexadécimal)
+ * @returns {Promise<Object>} Données de l'équipe mise à jour
+ */
+const update = async (id, teamData) => {
+    if (!id) throw new Error('ID d\'équipe requis');
+    validateTeamData(teamData);
+    
+    return api.put(`/api/teams/${id}`, {
+        name: teamData.name.trim(),
+        color: teamData.color
+    });
 };
+
+/**
+ * Supprime une équipe
+ * @param {string|number} id - ID de l'équipe à supprimer
+ * @returns {Promise<Object>} Confirmation de suppression
+ */
+const remove = async (id) => {
+    if (!id) throw new Error('ID d\'équipe requis');
+    
+    return api.delete(`/api/teams/${id}`);
+};
+
+// Création d'un objet de service pour faciliter l'utilisation
+const teamService = {
+    getAll,
+    getById,
+    create,
+    update,
+    delete: remove,
+    // Maintien de la compatibilité avec l'ancien code
+    fetchTeams: getAll,
+    createTeam: create,
+    updateTeam: update,
+    deleteTeam: remove
+};
+
+// Export de l'objet de service
+export default teamService;

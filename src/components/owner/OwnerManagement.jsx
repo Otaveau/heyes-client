@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo  } from 'react';
-import { fetchOwners, deleteOwner, createOwner, updateOwner } from '../../services/api/ownerService';
-import { fetchTeams } from '../../services/api/teamService';
+import ownerService from '../../services/api/ownerService';
+import teamService from '../../services/api/teamService';
 import ConfirmationModal from '../ui/confirmationModal';
 import { OwnerList } from './OwnerList';
 import { OwnerDetails } from './OwnerDetails';
@@ -33,7 +33,7 @@ export default function OwnerManagement() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchOwners();
+      const data = await ownerService.fetchOwners();
       setOwners(data);
     } catch (error) {
       console.error('Error fetching owners:', error);
@@ -45,7 +45,7 @@ export default function OwnerManagement() {
 
   const loadTeams = useCallback(async () => {
     try {
-      const data = await fetchTeams();
+      const data = await teamService.fetchTeams();
       setTeams(data);
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -81,7 +81,7 @@ export default function OwnerManagement() {
         teamId: formData.teamId ? parseInt(formData.teamId, 10) : null
       };
 
-      await createOwner(sanitizedOwner);
+      await ownerService.createOwner(sanitizedOwner);
       await loadOwners();
     } catch (error) {
       console.error('Error creating owner:', error);
@@ -128,7 +128,7 @@ export default function OwnerManagement() {
         teamId: formData.teamId ? parseInt(formData.teamId, 10) : null
       };
 
-      const updatedOwner = await updateOwner(ownerId, sanitizedOwner);
+      const updatedOwner = await ownerService.updateOwner(ownerId, sanitizedOwner);
 
       // Récupérer le nom de team
       const teamId = updatedOwner.teamId || updatedOwner.team_id;
@@ -190,7 +190,7 @@ export default function OwnerManagement() {
       // Obtenir l'ID correct pour la suppression
       const ownerId = ownerToDelete.id || ownerToDelete.owner_id || ownerToDelete.ownerId;
 
-      await deleteOwner(ownerId);
+      await ownerService.deleteOwner(ownerId);
 
       // Si le owner supprimé était sélectionné, désélectionner
       if (selectedOwner && selectedOwnerId === ownerId) {

@@ -122,8 +122,6 @@ export const getWeekNumber = (date) => {
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 };
 
-// CLASS UTILS METHODS
-
 // Convertit une entrée en objet Date
 const toDate = (date) => {
   if (!date) return null;

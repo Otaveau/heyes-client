@@ -4,7 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
-import { register } from '../../services/api/authService';
+import authService from '../../services/api/authService';
 
 const Register = () => {
   useTheme();
@@ -32,7 +32,7 @@ const Register = () => {
 
     try {
       // Utilisez le service auth au lieu d'un appel fetch direct
-      await register({
+      await authService.register({
         name: formData.name || 'Utilisateur',
         password: formData.password
       });

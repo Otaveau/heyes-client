@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchTasks } from '../services/api/taskService';
-import { fetchOwners } from '../services/api/ownerService';
-import { fetchHolidays } from '../services/api/holidayService';
-import { fetchStatuses } from '../services/api/statusService';
-import { fetchTeams } from '../services/api/teamService';
+import taskService from '../services/api/taskService';
+import ownerService from '../services/api/ownerService';
+import holidayService from '../services/api/holidayService';
+import statusService from '../services/api/statusService';
+import teamService from '../services/api/teamService';
 
 export const useCalendarData = () => {
   const [tasks, setTasks] = useState([]);
@@ -122,11 +122,11 @@ export const useCalendarData = () => {
         statusesResults, 
         teamsResults
       ] = await Promise.allSettled([
-        fetchHolidays(year),
-        fetchOwners(),
-        fetchTasks(),
-        fetchStatuses(),
-        fetchTeams()
+        holidayService.fetchHolidays(year),
+        ownerService.fetchOwners(),
+        taskService.getAll(),
+        statusService.fetchStatuses(),
+        teamService.fetchTeams()
       ]);
       
       // Traiter les résultats des vacances

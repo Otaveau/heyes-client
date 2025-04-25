@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { createTeam, deleteTeam, fetchTeams, updateTeam } from '../../services/api/teamService';
+import teamService from '../../services/api/teamService';
 import { Card } from '../ui/card';
 import ConfirmationModal from '../ui/confirmationModal';
 import { TeamAddForm } from './TeamAddForm';
@@ -29,7 +29,7 @@ export default function TeamManagement() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchTeams();
+      const data = await teamService.fetchTeams();
       setTeams(data);
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -50,7 +50,7 @@ export default function TeamManagement() {
     setError(null);
 
     try {
-      await createTeam(newTeam);
+      await teamService.createTeam(newTeam);
       await loadTeams();
       return true;
     } catch (error) {
@@ -96,7 +96,7 @@ export default function TeamManagement() {
     setError(null);
 
     try {
-      const updatedTeam = await updateTeam(editedTeam.team_id, {
+      const updatedTeam = await teamService.updateTeam(editedTeam.team_id, {
         name: editedTeam.name.trim(),
         color: editedTeam.color
       });
@@ -139,7 +139,7 @@ export default function TeamManagement() {
     setError(null);
 
     try {
-      await deleteTeam(teamToDelete.team_id);
+      await teamService.deleteTeam(teamToDelete.team_id);
 
       // Si l'équipe supprimée était sélectionnée, désélectionner
       if (selectedTeam && selectedTeam.team_id === teamToDelete.team_id) {
