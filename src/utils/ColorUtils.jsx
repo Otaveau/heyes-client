@@ -1,3 +1,5 @@
+import { DEFAULT_COLOR } from '../constants/constants';
+
 // Fonction pour générer une variation de couleur à partir d'une couleur de base
 export const generateTaskColorFromBaseColor = (baseColor, resourceId) => {
   try {
@@ -54,6 +56,115 @@ export const generateTaskColorFromBaseColor = (baseColor, resourceId) => {
     return '#9CA3AF'; // Couleur par défaut en cas d'erreur
   }
 };
+
+// Fonction pour adapter une couleur au mode sombre
+export const adaptColorToDarkMode = (color, isDarkMode) => {
+  if (!isDarkMode) return color;
+  
+  try {
+    // Convertir la couleur en HSL
+    const rgb = hexToRgb(color);
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    
+    // Pour le mode sombre :
+    // - Conserver la teinte (h)
+    // - Augmenter légèrement la saturation
+    // - Ajuster la luminosité en fonction de son niveau actuel
+    let newSat = Math.min(1, hsl.s * 1.2); // Augmenter saturation de 20%
+    
+    // Si la couleur est déjà foncée, l'éclaircir pour qu'elle se démarque
+    // Si la couleur est claire, la rendre plus vive
+    let newLight;
+    if (hsl.l < 0.3) {
+      // Couleur foncée - l'éclaircir
+      newLight = Math.min(0.65, hsl.l * 1.8);
+    } else if (hsl.l > 0.7) {
+      // Couleur claire - la rendre plus vive mais pas trop sombre
+      newLight = 0.55;
+    } else {
+      // Couleur moyenne - la maintenir dans une plage visible 
+      newLight = 0.5 + (hsl.l - 0.5) * 0.3;
+    }
+    
+    // Convertir HSL en RGB puis en HEX
+    const newRgb = hslToRgb(hsl.h, newSat, newLight);
+    const newHex = rgbToHex(newRgb.r, newRgb.g, newRgb.b);
+    
+    return newHex;
+  } catch (error) {
+    console.error('Error adapting color to dark mode:', error);
+    return color; // Retourner la couleur originale en cas d'erreur
+  }
+};
+
+// Fonction pour créer la map des couleurs des membres
+export const createMemberColorMap = (resources, isDarkMode = false) => {
+  const colorMap = {};
+  const teamColorMap = {};
+
+  // 1. Identifier les teams et leurs couleurs
+  resources.forEach(resource => {
+    let teamId = resource.id;
+    let numericId = teamId;
+
+    if (typeof teamId === 'string' && teamId.startsWith('team_')) {
+      numericId = teamId.replace('team_', '');
+    }
+
+    const teamColor = resource.extendedProps?.teamColor;
+
+    if (teamColor) {
+      // Adapter la couleur de l'équipe au mode sombre si nécessaire
+      const adaptedColor = isDarkMode ? adaptColorToDarkMode(teamColor, true) : teamColor;
+      
+      teamColorMap[teamId] = adaptedColor;
+      teamColorMap[numericId] = adaptedColor;
+      teamColorMap[String(numericId)] = adaptedColor;
+
+      if (resource.extendedProps?.teamId) {
+        teamColorMap[resource.extendedProps.teamId] = adaptedColor;
+        teamColorMap[String(resource.extendedProps.teamId)] = adaptedColor;
+      }
+    }
+  });
+
+  // 2. Attribuer des couleurs aux owners en fonction de leur team
+  resources.forEach(resource => {
+    let teamId = resource.extendedProps?.teamId || resource.extendedProps?.team_id;
+
+    // Si pas trouvé et qu'il y a un parentId, l'utiliser
+    if (!teamId && resource.parentId) {
+      teamId = resource.parentId;
+
+      if (typeof teamId === 'string' && teamId.startsWith('team_')) {
+        const numericId = teamId.replace('team_', '');
+        if (teamColorMap[numericId]) {
+          teamId = numericId;
+        }
+      }
+    }
+
+    if (!teamId) {
+      // Adapter la couleur par défaut au mode sombre si nécessaire
+      colorMap[resource.id] = isDarkMode ? adaptColorToDarkMode(DEFAULT_COLOR, true) : DEFAULT_COLOR;
+      return;
+    }
+
+    // Chercher la couleur de team
+    const teamColor = teamColorMap[teamId] || teamColorMap[String(teamId)];
+
+    if (teamColor) {
+      // Générer une couleur dérivée et l'adapter au mode sombre si nécessaire
+      const derivedColor = generateTaskColorFromBaseColor(teamColor, resource.id);
+      colorMap[resource.id] = derivedColor;
+    } else {
+      // Adapter la couleur par défaut au mode sombre si nécessaire
+      colorMap[resource.id] = isDarkMode ? adaptColorToDarkMode(DEFAULT_COLOR, true) : DEFAULT_COLOR;
+    }
+  });
+
+  return colorMap;
+}
 
 // Convertir HEX en RGB
 function hexToRgb(hex) {
@@ -140,10 +251,11 @@ function rgbToHex(r, g, b) {
 
 /**
  * Fonction pour déterminer si le texte doit être blanc ou noir sur une couleur de fond
+ * Tient compte du mode sombre pour ajuster le seuil
  */
-export const getContrastTextColor = (backgroundColor) => {
+export const getContrastTextColor = (backgroundColor, isDarkMode = false) => {
   if (!backgroundColor || backgroundColor.length < 7) {
-    return '#000000'; // Noir par défaut si la couleur est invalide
+    return isDarkMode ? '#FFFFFF' : '#000000'; // Couleur par défaut en fonction du mode
   }
   
   try {
@@ -154,23 +266,29 @@ export const getContrastTextColor = (backgroundColor) => {
     // Cette formule donne une meilleure approximation de la perception humaine
     const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
     
-    // Seuil de contraste pour l'accessibilité WCAG
-    return luminance > 0.55 ? '#000000' : '#FFFFFF';
+    // Seuil de contraste ajusté pour le mode sombre
+    // En mode sombre, nous privilégions le texte blanc sur des fonds légèrement plus clairs
+    const threshold = isDarkMode ? 0.6 : 0.55;
+    
+    return luminance > threshold ? '#000000' : '#FFFFFF';
   } catch (error) {
     console.error('Error calculating contrast color:', error);
-    return '#000000'; // Noir par défaut en cas d'erreur
+    return isDarkMode ? '#FFFFFF' : '#000000'; // Couleur par défaut en fonction du mode
   }
 }
 
 // Fonction d'aide pour ajuster les couleurs (assombrir ou éclaircir)
-export const adjustColor = (color, percent) => {
+export const adjustColor = (color, percent, isDarkMode = false) => {
+  // En mode sombre, inverser l'effet pour certaines opérations
+  const adjustedPercent = isDarkMode && percent < 0 ? -percent * 0.7 : percent;
+  
   let R = parseInt(color.substring(1,3),16);
   let G = parseInt(color.substring(3,5),16);
   let B = parseInt(color.substring(5,7),16);
 
-  R = parseInt(R * (100 + percent) / 100);
-  G = parseInt(G * (100 + percent) / 100);
-  B = parseInt(B * (100 + percent) / 100);
+  R = parseInt(R * (100 + adjustedPercent) / 100);
+  G = parseInt(G * (100 + adjustedPercent) / 100);
+  B = parseInt(B * (100 + adjustedPercent) / 100);
 
   R = (R < 255) ? R : 255;  
   G = (G < 255) ? G : 255;  

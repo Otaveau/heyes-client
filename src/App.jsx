@@ -3,10 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CalendarView } from './components/calendar/CalendarView';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import OwnerManagement from './components/manage/OwnerManagement';
-import TeamManagement from './components/manage/TeamManagement';
+import OwnerManagement from './components/owner/OwnerManagement';
+import TeamManagement from './components/team/TeamManagement';
 import Navigation from './components/common/Navigation';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Spinner from './components/ui/spinner';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -39,7 +40,7 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       {state.isAuthenticated && <Navigation />}
-      <div className="flex justify-center mx-autopx-4 pt-5 transition-colors duration-200 dark:bg-gray-900 min-h-screen">
+      <div className="flex justify-center mx-auto px-4 pt-5 transition-colors duration-200 bg-white dark:bg-gray-900 min-h-screen">
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/login" element={<PublicOnlyWrapper><Login /></PublicOnlyWrapper>} />
@@ -56,7 +57,8 @@ const AppContent = () => {
 
 const App = () => (
   <AuthProvider>
-    <ToastContainer
+    <ThemeProvider>
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -66,8 +68,10 @@ const App = () => (
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        theme="light" // Sera remplacé par "dark" automatiquement en mode sombre
       />
       <AppContent />
+    </ThemeProvider>
   </AuthProvider>
 );
 

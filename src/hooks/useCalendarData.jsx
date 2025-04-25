@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchTasks } from '../services/api/taskService';
 import { fetchOwners } from '../services/api/ownerService';
 import { fetchHolidays } from '../services/api/holidayService';
 import { fetchStatuses } from '../services/api/statusService';
 import { fetchTeams } from '../services/api/teamService';
-
 
 export const useCalendarData = () => {
   const [tasks, setTasks] = useState([]);
@@ -13,51 +12,46 @@ export const useCalendarData = () => {
   const [statuses, setStatuses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isMounted = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  const formatHolidays = useCallback((holidayDates) => {
-    return holidayDates;
-  }, []);
-
+  
+  // Formate les ressources (propriétaires et équipes) pour l'affichage
   const formatResources = useCallback((ownersData, teamsData = []) => {
     const teamsArray = Array.isArray(teamsData) ? teamsData : [];
     const owners = Array.isArray(ownersData) ? ownersData : [];
+    
+    // Créer un dictionnaire des équipes pour une recherche efficace
     const teamDict = {};
     teamsArray.forEach(team => {
       if (team && team.team_id) {
         teamDict[team.team_id] = {
           id: team.team_id,
-          name: team.name,
+          name: team.name || 'Équipe sans nom',
           teamColor: team.color || '#797d7d'
         };
       }
     });
 
+    // Formate les propriétaires en ressources
     const resources = [];
     owners.forEach(owner => {
       if (!owner) return;
+      
       const teamId = owner.teamId;
-      const team = teamId ? teamDict[teamId] : null;
-      const teamName = team.name;
-      const teamColor = team.teamColor;
+      // Vérification de sécurité pour éviter les accès à null/undefined
+      const team = teamId && teamDict[teamId] ? teamDict[teamId] : null;
+      
       resources.push({
         id: owner.ownerId,
         title: owner.name,
-        parentId: `team_${teamId}`,
+        parentId: team ? `team_${teamId}` : undefined,
         extendedProps: {
           teamId: teamId,
-          teamName: teamName,
-          teamColor: teamColor
+          teamName: team?.name,
+          teamColor: team?.teamColor
         }
       });
     });
 
+    // Formate les équipes en ressources
     Object.values(teamDict).forEach(team => {
       resources.push({
         id: `team_${team.id}`,
@@ -72,118 +66,154 @@ export const useCalendarData = () => {
     return resources;
   }, []);
 
-  // Fonction mise à jour pour standardiser le traitement des dates
+  // Formate les tâches pour l'affichage dans le calendrier
   const formatTasks = useCallback((tasksData) => {
     const tasks = Array.isArray(tasksData) ? tasksData : [];
 
-    return tasks.map(task => {
-      if (!task) return null;
+    return tasks
+      .filter(Boolean)
+      .map(task => {
+        // Gestion précise des dates
+        const startDate = task.start_date || null;
+        const inclusiveEndDate = task.end_date || null;
 
-      // Gestion précise des dates
-      const startDate = task.start_date || null;
-
-      // Date inclusive (celle stockée en BDD)
-      const inclusiveEndDate = task.end_date|| null;
-
-      // Date exclusive pour FullCalendar (jour suivant la date de fin inclusive)
-      const exclusiveEndDate = inclusiveEndDate ? new Date(inclusiveEndDate) : null;
-      if (exclusiveEndDate) {
-        exclusiveEndDate.setDate(exclusiveEndDate.getDate() + 1);
-      }
-
-      return {
-        id: task.id,
-        title: task.title || 'Tâche sans titre',
-        start: startDate,
-        end: exclusiveEndDate, // Date exclusive pour FullCalendar
-        resourceId: (task.owner_id || task.ownerId)?.toString(),
-        allDay: true,
-        extendedProps: {
-          statusId: (task.status_id || task.statusId || task.extendedProps?.statusId)?.toString(),
-          userId: task.user_id || task.userId || task.extendedProps?.userId,
-          description: task.description || task.extendedProps?.description || '',
-          team: task.team_name || task.extendedProps?.teamName,
-          ownerName: task.owner_name || task.extendedProps?.ownerName,
-          statusType: task.status_type || task.extendedProps?.statusType,
-
-          // Ajout des informations de dates supplémentaires
-          startDate: startDate,
-          inclusiveEndDate: inclusiveEndDate, // Date inclusive (jour inclus dans l'événement)
-          exclusiveEndDate: exclusiveEndDate  // Date exclusive (jour non inclus)
+        // Date exclusive pour FullCalendar (jour suivant la date de fin inclusive)
+        let exclusiveEndDate = null;
+        if (inclusiveEndDate) {
+          exclusiveEndDate = new Date(inclusiveEndDate);
+          exclusiveEndDate.setDate(exclusiveEndDate.getDate() + 1);
         }
-      };
-    }).filter(task => task !== null);
+
+        return {
+          id: task.id,
+          title: task.title || 'Tâche sans titre',
+          start: startDate,
+          end: exclusiveEndDate, // Date exclusive pour FullCalendar
+          resourceId: (task.owner_id || task.ownerId)?.toString(),
+          allDay: true,
+          extendedProps: {
+            statusId: task.extendedProps?.statusId?.toString() || null,
+            userId: task.extendedProps?.userId || null,
+            description: task.extendedProps?.description || '',
+            team: task.extendedProps?.teamName || null,
+            ownerName: task.extendedProps?.ownerName || null,
+            statusType: task.extendedProps?.statusType || null,
+            // Ajout des informations de dates supplémentaires
+            startDate,
+            inclusiveEndDate,
+            exclusiveEndDate
+          }
+        };
+      });
   }, []);
 
-
   const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    const year = new Date().getFullYear();
+    
     try {
-      setIsLoading(true);
-      setError(null);
-      const year = new Date().getFullYear();
-
-      let holidayDates = [];
-      try {
-        holidayDates = await fetchHolidays(year);
-      } catch (err) {
-        console.error('Erreur lors de la récupération des jours fériés:', err);
+      // Exécuter toutes les requêtes en parallèle
+      const [
+        holidayResults, 
+        ownersResults, 
+        tasksResults, 
+        statusesResults, 
+        teamsResults
+      ] = await Promise.allSettled([
+        fetchHolidays(year),
+        fetchOwners(),
+        fetchTasks(),
+        fetchStatuses(),
+        fetchTeams()
+      ]);
+      
+      // Traiter les résultats des vacances
+      const holidayDates = holidayResults.status === 'fulfilled' 
+        ? holidayResults.value 
+        : [];
+      
+      if (holidayResults.status === 'rejected') {
+        console.error('Erreur lors de la récupération des jours fériés:', holidayResults.reason);
       }
-
-      let ownersData = [];
-      try {
-        ownersData = await fetchOwners();
-      } catch (err) {
-        console.error('Erreur lors de la récupération des propriétaires:', err);
+      
+      // Traiter les résultats des propriétaires
+      const ownersData = ownersResults.status === 'fulfilled' 
+        ? ownersResults.value 
+        : [];
+      
+      if (ownersResults.status === 'rejected') {
+        console.error('Erreur lors de la récupération des propriétaires:', ownersResults.reason);
       }
-
-      let tasksData = [];
-      try {
-        tasksData = await fetchTasks();
-      } catch (err) {
-        console.error('Erreur lors de la récupération des tâches:', err);
+      
+      // Traiter les résultats des tâches
+      const tasksData = tasksResults.status === 'fulfilled' 
+        ? tasksResults.value 
+        : [];
+      
+      if (tasksResults.status === 'rejected') {
+        console.error('Erreur lors de la récupération des tâches:', tasksResults.reason);
       }
-
-      let statusesData = [];
-      try {
-        statusesData = await fetchStatuses();
-      } catch (err) {
-        console.error('Erreur lors de la récupération des statuts:', err);
+      
+      // Traiter les résultats des statuts
+      const statusesData = statusesResults.status === 'fulfilled' 
+        ? statusesResults.value 
+        : [];
+      
+      if (statusesResults.status === 'rejected') {
+        console.error('Erreur lors de la récupération des statuts:', statusesResults.reason);
       }
-
+      
+      // Traiter les résultats des équipes
       let teamsData = [];
-      try {
-        const fetchedTeams = await fetchTeams();
-
+      
+      if (teamsResults.status === 'fulfilled') {
+        const fetchedTeams = teamsResults.value;
+        
         if (Array.isArray(fetchedTeams)) {
           teamsData = fetchedTeams;
         } else if (fetchedTeams) {
           teamsData = [fetchedTeams];
         }
-
-      } catch (err) {
-        console.error('Erreur lors de la récupération des teams:', err);
+      } else {
+        console.error('Erreur lors de la récupération des équipes:', teamsResults.reason);
       }
-
-      const formattedHolidays = formatHolidays(holidayDates);
-      setHolidays(formattedHolidays);
-
-      const formattedResources = formatResources(ownersData, teamsData);
-      setResources(formattedResources);
-
+      
+      // Vérifier si toutes les requêtes ont échoué
+      const allFailed = [
+        holidayResults, 
+        ownersResults, 
+        tasksResults, 
+        statusesResults, 
+        teamsResults
+      ].every(result => result.status === 'rejected');
+      
+      if (allFailed) {
+        throw new Error("Impossible de charger les données. Veuillez réessayer plus tard.");
+      }
+      
+      // Mettre à jour l'état avec les données formatées
+      setHolidays(holidayDates);
+      setResources(formatResources(ownersData, teamsData));
       setStatuses(statusesData);
-
-      const formattedTasks = formatTasks(tasksData);
-      setTasks(formattedTasks);
-
+      setTasks(formatTasks(tasksData));
+      
     } catch (err) {
       console.error('Erreur générale dans loadData:', err);
-      setError(err);
+      setError(err.message || "Une erreur s'est produite lors du chargement des données");
     } finally {
       setIsLoading(false);
     }
-  }, [formatHolidays, formatResources, formatTasks]);
+  }, [formatResources, formatTasks]);
 
+  // Charger les données au montage du composant
   useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Fonction pour rafraîchir les données
+  const refreshData = useCallback(() => {
     loadData();
   }, [loadData]);
 
@@ -195,5 +225,6 @@ export const useCalendarData = () => {
     isLoading,
     error,
     setTasks,
+    refreshData, // Ajout d'une fonction pour rafraîchir les données
   };
 };

@@ -1,0 +1,465 @@
+/* calendar-dark.css */
+/* Styles spécifiques pour le mode sombre du calendrier */
+
+/* ===================================
+ * Variables
+ * =================================== */
+.dark {
+    /* Couleurs primaires */
+    --color-primary: #3b82f6;
+    --color-primary-dark: #2563eb;
+    --color-primary-light: #60a5fa;
+
+    /* Couleurs de fond */
+    --color-bg-light: #1f2937;
+    --color-bg-white: #111827;
+    --color-bg-hover: #374151;
+    --color-bg-taskboard: #1e293b;
+
+    /* Couleurs pour états */
+    --color-today-bg: rgba(59, 130, 246, 0.1);
+    --color-weekend-bg: #111827;
+    --color-holiday-bg: #422006;
+
+    /* Couleurs de texte */
+    --color-text-dark: #f9fafb;
+    --color-text-medium: #d1d5db;
+    --color-text-light: #9ca3af;
+    --color-text-blue: #60a5fa;
+
+    /* Bordures */
+    --color-border-light: #374151;
+    --color-border-medium: #4b5563;
+    --color-border-column: #374151;
+
+    /* Ombres */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* ===================================
+   * Animations
+   * =================================== */
+@keyframes taskAddedAnimation-dark {
+    0% {
+        transform: scale(1);
+        background-color: rgba(96, 165, 250, 0.4);
+    }
+
+    50% {
+        transform: scale(1.1);
+        background-color: rgba(96, 165, 250, 0.6);
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: inherit;
+    }
+}
+
+@keyframes taskAppear-dark {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+        background-color: rgba(96, 165, 250, 0.1);
+    }
+
+    50% {
+        background-color: rgba(96, 165, 250, 0.05);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        background-color: var(--color-bg-white);
+    }
+}
+
+@keyframes pulseTarget-dark {
+    0% {
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(96, 165, 250, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
+    }
+}
+
+/* ===================================
+   * Layout général
+   * =================================== */
+.dark .fc,
+.fc.fc-theme-dark {
+    background-color: var(--color-bg-white);
+    border-color: var(--color-border-medium);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Corrections pour FullCalendar en mode sombre */
+.dark .fc * {
+    border-color: #374151 !important;
+}
+
+/* ===================================
+   * HeaderToolbar
+   * =================================== */
+.dark .fc .fc-toolbar,
+.fc-theme-dark .fc-toolbar {
+    background-color: var(--color-bg-light);
+    border-color: var(--color-border-medium);
+    box-shadow: var(--shadow-md);
+}
+
+/* ===================================
+   * Boutons et navigation
+   * =================================== */
+/* Boutons standard */
+.dark .fc .fc-button-primary,
+.fc-theme-dark .fc-button-primary {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+.dark .fc .fc-button-primary:hover,
+.fc-theme-dark .fc-button-primary:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+    color: #f9fafb;
+}
+
+.dark .fc .fc-button-primary:not(:disabled):active,
+.dark .fc .fc-button-primary.fc-button-active,
+.fc-theme-dark .fc-button-primary:not(:disabled):active,
+.fc-theme-dark .fc-button-primary.fc-button-active {
+    background-color: #2563eb;
+    border-color: #1d4ed8;
+}
+
+.dark .fc .fc-button-group,
+.fc-theme-dark .fc-button-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation personnalisée */
+.dark .fc-custom-nav-container,
+.fc-theme-dark .fc-custom-nav-container {
+    background-color: var(--color-bg-light);
+    border-color: var(--color-border-medium);
+    box-shadow: var(--shadow-md);
+}
+
+/* Bouton "Aujourd'hui" */
+.dark .fc-today-button,
+.fc-theme-dark .fc-today-button {
+    background-color: #1e3a8a;
+    border-color: #3b82f6;
+    color: #93c5fd;
+}
+
+.dark .fc-today-button:hover,
+.fc-theme-dark .fc-today-button:hover {
+    background-color: #2563eb;
+    border-color: var(--color-primary-light);
+}
+
+/* Navigation par année */
+.dark .fc-year-nav,
+.fc-theme-dark .fc-year-nav {
+    background-color: #374151;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.dark .fc-year-display,
+.fc-theme-dark .fc-year-display {
+    color: #60a5fa;
+}
+
+.dark .fc-prev-year-button,
+.dark .fc-next-year-button,
+.fc-theme-dark .fc-prev-year-button,
+.fc-theme-dark .fc-next-year-button {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+.dark .fc-prev-year-button:hover,
+.dark .fc-next-year-button:hover,
+.fc-theme-dark .fc-prev-year-button:hover,
+.fc-theme-dark .fc-next-year-button:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+    color: #f9fafb;
+}
+
+/* Boutons des mois */
+.dark .fc-month-button,
+.fc-theme-dark .fc-month-button {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+.dark .fc-month-button:hover,
+.fc-theme-dark .fc-month-button:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+    color: #f9fafb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark .fc-month-button.fc-button-active,
+.fc-theme-dark .fc-month-button.fc-button-active {
+    background-color: #2563eb;
+    border-color: #1d4ed8;
+    box-shadow: 0 2px 4px rgba(29, 78, 216, 0.4);
+}
+
+.dark .fc-month-button.fc-button-active::after,
+.fc-theme-dark .fc-month-button.fc-button-active::after {
+    background-color: #60a5fa;
+}
+
+.dark .fc-button-active.fc-resourceTimelineYear-button::after,
+.dark .fc-button-active.fc-resourceTimelineMonth-button::after,
+.dark .fc-button-active.fc-resourceTimelineWeek-button::after,
+.fc-theme-dark .fc-button-active.fc-resourceTimelineYear-button::after,
+.fc-theme-dark .fc-button-active.fc-resourceTimelineMonth-button::after,
+.fc-theme-dark .fc-button-active.fc-resourceTimelineWeek-button::after {
+    background-color: #60a5fa;
+}
+
+.dark .fc-month-button.fc-button-clicked,
+.fc-theme-dark .fc-month-button.fc-button-clicked {
+    background-color: #60a5fa;
+    color: #1f2937;
+}
+
+/* ===================================
+   * Sections du calendrier
+   * =================================== */
+/* En-têtes et sections fixes */
+.dark .fc-scrollgrid-section-header,
+.dark .fc-scrollgrid-section-sticky {
+    background-color: #1f2937 !important;
+}
+
+/* Cellules d'en-tête */
+.dark .fc .fc-col-header-cell,
+.fc-theme-dark .fc-col-header-cell {
+    background-color: var(--color-bg-light) !important;
+}
+
+.dark .fc .fc-col-header-cell,
+.dark .fc .fc-scrollgrid-sync-inner,
+.dark .fc-theme-standard .fc-scrollgrid {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .fc .fc-col-header-cell-cushion,
+.fc-theme-dark .fc-col-header-cell-cushion {
+    color: var(--color-text-dark) !important;
+}
+
+/* Zones de jours */
+.dark .fc .fc-daygrid-day:hover,
+.fc-theme-dark .fc-daygrid-day:hover {
+    background-color: #374151;
+}
+
+/* Lignes et cellules du calendrier */
+.dark .fc-scrollgrid-sync-table,
+.dark .fc-scrollgrid-section-body .fc-scroller-harness,
+.dark .fc-theme-standard td,
+.dark .fc-theme-standard th,
+.dark .fc .fc-scrollgrid {
+    border-color: #374151 !important;
+}
+
+.dark .fc-timeline-lane:nth-child(even),
+.fc-theme-dark .fc-timeline-lane:nth-child(even) {
+    background-color: #1e293b;
+}
+
+.dark .fc-timeline-lane:nth-child(odd),
+.fc-theme-dark .fc-timeline-lane:nth-child(odd) {
+    background-color: #111827;
+}
+
+/* Corps du calendrier */
+.dark .fc-view-harness,
+.dark .fc-daygrid-body,
+.dark .fc-scrollgrid,
+.dark .fc-timegrid-body,
+.dark .fc-resource-timeline-divider,
+.dark .fc-timeline-body {
+    background-color: #111827;
+}
+
+/* Cellules du tableau */
+.dark .fc-timeline-slot-cushion,
+.dark .fc-scrollgrid-sync-inner {
+    color: #d1d5db !important;
+}
+
+/* Zones séparatrices */
+.dark .fc-resource-timeline-divider,
+.dark .fc-timeline-slot-lane,
+.dark .fc-timeline-header-row {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+/* Autres éléments qui pourraient garder un fond blanc */
+.dark .fc td,
+.dark .fc th,
+.dark .fc-list-day-cushion,
+.dark .fc-list-event-graphic,
+.dark .fc-list-event-time {
+    background-color: transparent !important;
+}
+
+/* ===================================
+   * Ressources et équipes
+   * =================================== */
+.dark .fc-resource-area,
+.fc-theme-dark .fc-resource-area {
+    background-color: var(--color-bg-light) !important;
+    border-right-color: var(--color-border-medium) !important;
+}
+
+.dark .fc-resource-area .fc-datagrid-cell-cushion {
+    color: #d1d5db !important;
+}
+
+.dark .resource-team-header,
+.fc-theme-dark .resource-team-header {
+    background-color: var(--color-bg-hover) !important;
+}
+
+.dark .resource-owner-cell,
+.fc-theme-dark .resource-owner-cell {
+    border-bottom-color: var(--color-border-medium) !important;
+}
+
+.dark .fc-timeline-lane.team-resource-lane.fc-highlight,
+.fc-theme-dark .fc-timeline-lane.team-resource-lane.fc-highlight {
+    background-color: #7f1d1d !important;
+}
+
+
+  /* Style pour les lanes de ressources */
+.dark .resource-team-lane .fc-timeline-lane-frame {
+    background-color: #1f2937 !important;
+    cursor: not-allowed;
+  }
+
+/* ===================================
+ * 7. Jours spéciaux - Mode sombre
+ * =================================== */
+
+/* Styles communs pour les jours fériés et weekends */
+.dark .fc .holiday-slot,
+.dark .fc .weekend-slot,
+.dark .fc .holiday-column,
+.dark .fc .weekend-column,
+.fc-theme-dark .holiday-slot,
+.fc-theme-dark .weekend-slot,
+.fc-theme-dark .holiday-column,
+.fc-theme-dark .weekend-column {
+    background-color: var(--color-weekend-bg) !important;
+}
+
+.dark .fc .holiday-slot .fc-timeline-slot-cushion,
+.dark .fc .weekend-slot .fc-timeline-slot-cushion,
+.dark .fc .holiday-column .fc-timeline-slot-cushion,
+.dark .fc .weekend-column .fc-timeline-slot-cushion,
+.fc-theme-dark .holiday-slot .fc-timeline-slot-cushion,
+.fc-theme-dark .weekend-slot .fc-timeline-slot-cushion,
+.fc-theme-dark .holiday-column .fc-timeline-slot-cushion,
+.fc-theme-dark .weekend-column .fc-timeline-slot-cushion {
+    color: var(--color-text-light);
+}
+
+/* Styles spécifiques */
+.dark .holiday-column,
+.fc-theme-dark .holiday-column {
+    background-color: var(--color-holiday-bg) !important;
+}
+
+.dark .weekend-column,
+.fc-theme-dark .weekend-column {
+    background-color: var(--color-weekend-bg) !important;
+}
+
+/* Style pour le jour actuel */
+.dark .fc-day-today,
+.fc-theme-dark .fc-day-today {
+    background-color: var(--color-today-bg) !important;
+    border-left: 2px solid var(--color-primary) !important;
+    border-right: 2px solid var(--color-primary) !important;
+}
+
+.dark .fc-day-today,
+.fc-theme-dark .fc-day-today {
+    background-color: var(--color-today-bg) !important;
+    border-left: 2px solid #3b82f6 !important;
+    border-right: 2px solid #3b82f6 !important;
+}
+
+/* ===================================
+* Événements
+* =================================== */
+.dark .fc-event,
+.fc-theme-dark .fc-event {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dark .task-title,
+.fc-theme-dark .task-title {
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark .fc-event-main-custom.conge-event,
+.fc-theme-dark .fc-event-main-custom.conge-event {
+    background: repeating-linear-gradient(45deg,
+            #374151,
+            #374151 4px,
+            #1f2937 4px,
+            #1f2937 8px);
+    border-left: 3px solid #6B7280;
+}
+
+/* ===================================
+   * Effets et animations
+   * =================================== */
+.dark .task-newly-added,
+.fc-theme-dark .task-newly-added {
+    animation: taskAppear-dark 0.6s ease-out forwards;
+}
+
+.dark .task-added,
+.fc-theme-dark .task-added {
+    animation: taskAddedAnimation-dark 0.5s ease-in-out;
+}
+
+.dark .dropzone-pulse,
+.fc-theme-dark .dropzone-pulse {
+    animation: pulseTarget-dark 1.5s infinite;
+}
+
+/* ===================================
+   * Highlight pour Drag & Drop
+   * =================================== */
+.dark .fc-highlight,
+.fc-theme-dark .fc-highlight {
+    background-color: rgba(96, 165, 250, 0.1) !important;
+    border: 2px dashed var(--color-primary) !important;
+}

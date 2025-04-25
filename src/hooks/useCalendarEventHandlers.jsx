@@ -1,16 +1,18 @@
 import { useCallback } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import { DateUtils } from '../utils/dateUtils';
+import { hasValidEventBoundaries } from '../utils/DateUtils';
+import { ONE_DAY_MS } from '../constants/constants';
 
 export const useCalendarEventHandlers = (
   setCalendarState,
   tasks,
-  updateTaskStatus,
   handleTaskUpdate,
   holidays
 ) => {
-  // Sélection d'une tâche pour édition
+  /**
+   * Sélectionne une tâche pour l'édition
+   */
   const handleTaskSelection = useCallback((taskData) => {
     if (!taskData?.id) {
       console.warn(ERROR_MESSAGES.INVALID_TASK);
@@ -29,7 +31,9 @@ export const useCalendarEventHandlers = (
     }));
   }, [setCalendarState]);
 
-  // Clic sur un événement du calendrier
+  /**
+   * Gère le clic sur un événement du calendrier
+   */
   const handleCalendarEventClick = useCallback((clickInfo) => {
     const eventId = clickInfo.event.id;
     const task = tasks.find((t) => t.id.toString() === eventId.toString());
@@ -41,7 +45,9 @@ export const useCalendarEventHandlers = (
     }
   }, [handleTaskSelection, tasks]);
 
-  // Sélection d'une date sur le calendrier
+  /**
+   * Gère la sélection d'une date sur le calendrier
+   */
   const handleDateClick = useCallback((selectInfo) => {
     const startDate = selectInfo.start;
 
@@ -58,110 +64,104 @@ export const useCalendarEventHandlers = (
     selectInfo.view.calendar.unselect();
   }, [setCalendarState]);
 
-  // Déplacement d'un événement dans le calendrier
-  const handleEventDrop = useCallback(async (dropInfo) => {
-    const { event } = dropInfo;
+  /**
+   * Prépare les mises à jour d'une tâche après un changement dans le calendrier
+   */
+  const prepareTaskUpdates = useCallback((event, existingTask) => {
     const startDate = event.start;
-    const endDate = event.end || new Date(startDate.getTime() + 86400000);
+    const endDate = event.end || new Date(startDate.getTime() + ONE_DAY_MS);
     const exclusiveEndDate = endDate;
     const inclusiveEndDate = new Date(exclusiveEndDate);
     inclusiveEndDate.setDate(inclusiveEndDate.getDate() - 1);
 
-    // Validation des dates
-    if (!DateUtils.hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
-      dropInfo.revert();
-      toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
-      return;
-    }
+    const statusId = event._def?.extendedProps?.statusId || existingTask?.extendedProps?.statusId;
+    const resourceId = event._def?.resourceIds?.[0];
 
-    const taskId = event.id;
-    const existingTask = tasks.find(t => t.id.toString() === taskId.toString());
-
-    if (!existingTask) {
-      console.warn(`Tâche avec l'ID ${taskId} introuvable`);
-      dropInfo.revert();
-      return;
-    }
-
-    const targetStatusId = event._def.extendedProps.statusId || existingTask.extendedProps?.statusId;
-
-    console.log('targetStatusId', targetStatusId);
-
-
-
-    const resourceId = event._def.resourceIds[0];
-
-    // Préparer les mises à jour avec les deux formats de dates
-    const updates = {
-      title: event.title,
-      start: startDate, // Date de début (toujours inclusive)
-      end: endDate,   // Date de fin exclusive pour FullCalendar
-      exclusiveEndDate: exclusiveEndDate, // Explicitement stocker la date exclusive
+    return {
+      startDate,
+      endDate,
+      exclusiveEndDate,
+      inclusiveEndDate,
+      statusId,
       resourceId,
-      statusId: targetStatusId,
-      extendedProps: {
-        statusId: targetStatusId,
-        inclusiveEndDate: inclusiveEndDate // Stocker la date inclusive dans les propriétés étendues
+      updates: {
+        title: event.title,
+        start: startDate,
+        end: endDate,
+        exclusiveEndDate,
+        resourceId,
+        statusId,
+        extendedProps: {
+          statusId,
+          inclusiveEndDate
+        }
       }
     };
+  }, []);
 
-    await handleTaskUpdate(
-      taskId,
-      updates,
-      {
-        revertFunction: dropInfo.revert,
-        successMessage: `Tâche "${event.title}" déplacée`
+  /**
+    * Valide et met à jour une tâche après un événement de calendrier
+    */
+  const validateAndUpdateTask = useCallback(async (eventType, info) => {
+    try {
+      const { event } = info;
+      const taskId = event.id;
+
+      // Trouver la tâche existante
+      const existingTask = tasks.find(t => t.id.toString() === taskId.toString());
+      if (!existingTask) {
+        console.warn(`Tâche avec l'ID ${taskId} introuvable`);
+        info.revert();
+        return false;
       }
-    );
-  }, [tasks, handleTaskUpdate, holidays]);
 
-  // Redimensionnement d'un événement
-  const handleEventResize = useCallback(async (info) => {
+      // Préparer les mises à jour
+      const { startDate, inclusiveEndDate, updates } = prepareTaskUpdates(event, existingTask);
 
-    const { event } = info;
-    const startDate = event.start;
-    const endDate = event.end || new Date(startDate.getTime() + 86400000);
+      // Validation des dates
+      if (!hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
+        info.revert();
+        toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
+        return false;
+      }
 
-    const exclusiveEndDate = endDate;
-    const inclusiveEndDate = new Date(exclusiveEndDate);
-    inclusiveEndDate.setDate(inclusiveEndDate.getDate() - 1);
+      // Message de réussite personnalisé selon le type d'événement
+      const successMessage = eventType === 'drop'
+        ? `Tâche "${event.title}" déplacée`
+        : `Tâche "${event.title}" redimensionnée`;
 
-    // Validation des dates avec la date de fin inclusive
-    if (!DateUtils.hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
+      // Effectuer la mise à jour
+      await handleTaskUpdate(
+        taskId,
+        updates,
+        {
+          revertFunction: info.revert,
+          successMessage
+        }
+      );
+
+      return true;
+    } catch (error) {
+      console.error(`Erreur lors de la mise à jour de la tâche (${eventType}):`, error);
       info.revert();
-      toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
-      return;
+      toast.error('Une erreur est survenue lors de la mise à jour de la tâche', TOAST_CONFIG);
+      return false;
     }
+  }, [tasks, holidays, prepareTaskUpdates, handleTaskUpdate]);
 
-    const existingTask = tasks.find(task => task.id.toString() === event.id.toString());
-    if (!existingTask) {
-      console.warn(`Tâche avec l'ID ${event.id} introuvable`);
-      info.revert();
-      return;
-    }
-    // Préparer les mises à jour avec les deux formats de dates
-    const updates = {
-      start: startDate,
-      end: endDate, 
-      exclusiveEndDate: exclusiveEndDate,
-      resourceId: event._def.resourceIds[0],
-      statusId: event._def.extendedProps.statusId || existingTask.extendedProps?.statusId,
-      extendedProps: {
-        statusId: event._def.extendedProps.statusId || existingTask.extendedProps?.statusId,
-        inclusiveEndDate: inclusiveEndDate // Stocker la date inclusive dans les propriétés étendues
-      }
-    };
+  /**
+   * Gère le déplacement d'un événement dans le calendrier
+   */
+  const handleEventDrop = useCallback(async (dropInfo) => {
+    await validateAndUpdateTask('drop', dropInfo);
+  }, [validateAndUpdateTask]);
 
-    await handleTaskUpdate(
-      event.id,
-      updates,
-      {
-        revertFunction: info.revert,
-        successMessage: `Tâche "${event.title}" redimensionnée`
-      }
-    );
-  }, [handleTaskUpdate, holidays, tasks]);
-
+  /**
+   * Gère le redimensionnement d'un événement dans le calendrier
+   */
+  const handleEventResize = useCallback(async (resizeInfo) => {
+    await validateAndUpdateTask('resize', resizeInfo);
+  }, [validateAndUpdateTask]);
 
   return {
     handleCalendarEventClick,

@@ -1,31 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
+import { Trash2, ArrowLeft, ArrowRight, Plus, MoveRight, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Draggable } from '@fullcalendar/interaction';
-import { DateUtils } from '../../utils/dateUtils';
-import { Button } from '../ui/button';
-
-const addTaskAppearEffect = (taskElement) => {
-  if (!taskElement) return;
-
-  // Ajouter la classe pour l'animation
-  taskElement.classList.add('task-newly-added');
-
-  // Supprimer la classe après l'animation pour éviter les problèmes de style
-  setTimeout(() => {
-    taskElement.classList.remove('task-newly-added');
-  }, 800); // Légèrement plus long que la durée de l'animation
-};
-
-// 3. Fonction pour gérer l'effet de pulsation sur la zone de drop
-const addDropzonePulseEffect = (zoneElement, isActive) => {
-  if (!zoneElement) return;
-
-  if (isActive) {
-    zoneElement.classList.add('dropzone-active', 'dropzone-pulse');
-  } else {
-    zoneElement.classList.remove('dropzone-active', 'dropzone-pulse');
-  }
-};
+import { getInclusiveEndDate } from '../../utils/DateUtils';
+import { addTaskAppearEffect, addDropzonePulseEffect } from '../../utils/DndUtils';
+import { useTheme } from '../../context/ThemeContext';
 
 export const TaskBoard = ({
   dropZones = [],
@@ -41,14 +19,20 @@ export const TaskBoard = ({
   const [taskToDelete, setTaskToDelete] = useState(null);
   const draggablesRef = useRef([]);
   const [activeDropZone, setActiveDropZone] = useState(null);
+  useTheme();
 
   // Créer des références locales si aucune n'est fournie
   const internalRefs = useRef([]);
 
   // Initialiser les références internes si nécessaire
   useEffect(() => {
-    if (!internalRefs.current.length) {
-      internalRefs.current = dropZones.map(() => React.createRef());
+    if (!dropZones || dropZones.length === 0) return;
+    
+    // Redimensionner le tableau de références si nécessaire
+    if (internalRefs.current.length !== dropZones.length) {
+      internalRefs.current = Array(dropZones.length).fill(null).map((_, i) => 
+        internalRefs.current[i] || React.createRef()
+      );
     }
   }, [dropZones]);
 
@@ -139,6 +123,8 @@ export const TaskBoard = ({
 
   // Observer les changements dans les zones pour ajouter les effets d'apparition aux nouvelles tâches
   useEffect(() => {
+    if (!effectiveRefs.current || effectiveRefs.current.length === 0) return;
+
     // Pour chaque dropzone, configurer un observateur de mutation
     effectiveRefs.current.forEach((ref, index) => {
       if (!ref || !ref.current) return;
@@ -166,11 +152,29 @@ export const TaskBoard = ({
 
   // Initialisation des draggables FullCalendar pour le calendrier
   useEffect(() => {
-    // S'assurer que les refs sont initialisées
+    // S'assurer que dropZones est défini et non vide
+    if (!dropZones || dropZones.length === 0) {
+      console.warn("Les dropZones ne sont pas disponibles");
+      return;
+    }
+
+    // S'assurer que les refs sont initialisées et disponibles
     if (!effectiveRefs.current || effectiveRefs.current.length === 0) {
       console.warn("Les références ne sont pas disponibles pour les draggables");
       return;
     }
+
+    // S'assurer que toutes les refs ont une valeur current
+    const allRefsValid = effectiveRefs.current.every((ref, idx) => {
+      if (!ref || !ref.current) {
+        console.warn(`Référence ${idx} non valide`);
+        return false;
+      }
+      return true;
+    });
+
+    // Si certaines références ne sont pas valides, ne pas continuer
+    if (!allRefsValid) return;
 
     // Nettoyage des anciens draggables
     draggablesRef.current.forEach(draggable => {
@@ -180,13 +184,10 @@ export const TaskBoard = ({
 
     // Configuration des draggables FullCalendar seulement pour les zones qui ne sont pas statusId '2'
     effectiveRefs.current.forEach((ref, index) => {
-      if (!ref || !ref.current) {
-        console.warn(`Référence ${index} non disponible`);
-        return;
-      }
-
-      // Ne pas créer de draggable pour la zone avec statusId '2'
+      if (index >= dropZones.length) return; // Vérifier que l'index est valide
       const zone = dropZones[index];
+      
+      // Ne pas créer de draggable pour la zone avec statusId '2'
       if (zone && zone.statusId === '2') {
         return;
       }
@@ -215,27 +216,25 @@ export const TaskBoard = ({
                 description: task.extendedProps?.description || ''
               }
             };
+          },
+          // Utiliser les callbacks directement dans les options du draggable au lieu de .on()
+          dragStart: function () {
+            // Activer les effets visuels sur toutes les zones de drop potentielles
+            effectiveRefs.current.forEach((dropRef, i) => {
+              if (dropRef && dropRef.current && i !== index) {
+                dropRef.current.classList.add('potential-drop-target');
+              }
+            });
+          },
+          dragEnd: function () {
+            // Désactiver les effets visuels
+            effectiveRefs.current.forEach((dropRef) => {
+              if (dropRef && dropRef.current) {
+                dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
+              }
+            });
+            setActiveDropZone(null);
           }
-        });
-
-        // Ajouter les événements de drag and drop pour les effets visuels
-        draggable.on('dragstart', () => {
-          // Activer les effets visuels sur toutes les zones de drop potentielles
-          effectiveRefs.current.forEach((dropRef, i) => {
-            if (dropRef && dropRef.current && i !== index) {
-              dropRef.current.classList.add('potential-drop-target');
-            }
-          });
-        });
-
-        draggable.on('dragend', () => {
-          // Désactiver les effets visuels
-          effectiveRefs.current.forEach((dropRef) => {
-            if (dropRef && dropRef.current) {
-              dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
-            }
-          });
-          setActiveDropZone(null);
         });
 
         draggablesRef.current[index] = draggable;
@@ -283,18 +282,24 @@ export const TaskBoard = ({
 
   return (
     <>
-      <div className="taskboard-container-wrapper">
-        <div className="taskboard-header">
-          <h2 className="taskboard-title">Taskboard</h2>
+      <div className="taskboard-container-wrapper mr-[15px]">
+        {/* Header modifié avec Tailwind */}
+        <div className="flex justify-between items-center p-4 mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+            <span className="relative">
+              Taskboard
+              <span className="absolute -bottom-1 left-0 w-full h-1 bg-blue-500 dark:bg-blue-600 rounded-full"></span>
+            </span>
+          </h2>
 
           {onCreateTask && (
-            <Button
+            <button
               onClick={onCreateTask}
-              className="task-create-button"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors shadow-sm"
             >
-              <Plus className="h-5.5 w-5.5" strokeWidth={2.5} />
+              <Plus className="h-5 w-5" strokeWidth={2.5} />
               <span>Nouvelle tâche</span>
-            </Button>
+            </button>
           )}
         </div>
 
@@ -338,15 +343,43 @@ export const TaskBoard = ({
 
             return (
               <div
-                key={zone.id}
+                key={zone.id || `zone-${index}`}
                 ref={effectiveRefs.current[index]}
-                className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target dark:bg-gray-800 rounded-lg shadow-md ${isInProgressZone ? 'bg-blue-50' : 'bg-gray-100 dropzone'}`}
+                className={`flex-1 w-1/4 p-5 rounded mt-5 potential-drop-target ${
+                  isInProgressZone 
+                    ? 'bg-blue-50 dark:bg-blue-900/20' 
+                    : 'bg-gray-100 dark:bg-gray-800 dropzone'
+                } rounded-lg shadow-md`}
                 data-status-id={zone.statusId}
                 data-zone-id={zone.id}
                 data-dropzone-id={zone.id}
               >
-                <h3 className={`mb-4 font-bold ${isInProgressZone ? 'text-blue-700' : ''}`}>
+                <h3 className={`mb-4 font-bold text-lg flex items-center border-b pb-2 ${
+                  isInProgressZone 
+                    ? 'text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700' 
+                    : 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                }`}>
+                  {/* Icônes plus appropriées pour chaque statut */}
+                  {zone.title.toLowerCase().includes('entrant') && (
+                    <MoveRight className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {zone.title.toLowerCase().includes('cours') && (
+                    <Clock className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {zone.title.toLowerCase().includes('attente') && (
+                    <AlertCircle className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {zone.title.toLowerCase().includes('done') && (
+                    <CheckCircle className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
+                  {/* Icône par défaut si aucun des cas ci-dessus ne correspond */}
+                  {!['entrant', 'cours', 'attente', 'done'].some(term => zone.title.toLowerCase().includes(term)) && (
+                    <Plus className={`h-5 w-5 mr-2 ${isInProgressZone ? 'text-blue-600 dark:text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
+                  )}
                   {zone.title}
+                  <span className="ml-2 text-sm font-normal bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-0.5">
+                    {zoneTasks.length}
+                  </span>
                 </h3>
                 {zoneTasks.map(task => {
                   // Vérifier si c'est un congé
@@ -359,35 +392,35 @@ export const TaskBoard = ({
                     <div
                       key={task.id}
                       data-task-id={task.id}
-                      className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white border rounded hover:bg-gray-50 relative`}
+                      className={`${isConge ? 'conge-task' : 'fc-event'} p-2 mb-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600 relative`}
                       data-is-conge={isConge ? 'true' : 'false'}
                       onClick={() => handleExternalTaskClick && handleExternalTaskClick(task)}
                     >
                       {/* Titre affiché pour toutes les tâches */}
-                      <div className="font-medium">{task.title}</div>
+                      <div className="font-medium dark:text-white">{task.title}</div>
 
                       {/* Description affichée pour toutes les tâches si elle existe */}
                       {(task.description || task.extendedProps?.description) && (
-                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                           {task.description || task.extendedProps?.description}
                         </div>
                       )}
 
                       {/* Informations supplémentaires uniquement pour le taskboard "En cours" */}
                       {isInProgressZone && (
-                        <>
+                        <React.Fragment key={`info-${task.id}`}>
                           {task.resourceId && (
-                            <div className="text-xs text-blue-600 mt-1">
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                               <span className="font-medium">Assigné à:</span> {getResourceName(task.resourceId)}
                             </div>
                           )}
 
                           {/* Dates de la tâche */}
-                          <div className="text-xs text-gray-600 mt-1">
-                            <div><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
-                            <div><span className="font-medium">Fin:</span> {formatDate(DateUtils.getInclusiveEndDate(task))}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            <div key={`start-${task.id}`}><span className="font-medium">Début:</span> {formatDate(task.start)}</div>
+                            <div key={`end-${task.id}`}><span className="font-medium">Fin:</span> {formatDate(getInclusiveEndDate(task))}</div>
                           </div>
-                        </>
+                        </React.Fragment>
                       )}
 
                       {/* Barre d'actions avec boutons de déplacement et suppression */}
@@ -395,7 +428,8 @@ export const TaskBoard = ({
                         {/* Flèche gauche - visible sauf pour le premier taskboard */}
                         {index > 0 && (
                           <button
-                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            key={`left-${task.id}`}
+                            className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 focus:outline-none"
                             onClick={(e) => moveTaskLeft(e, task)}
                             title="Déplacer vers la gauche"
                           >
@@ -405,7 +439,8 @@ export const TaskBoard = ({
 
                         {/* Bouton de suppression */}
                         <button
-                          className="p-1 text-gray-400 hover:text-red-500 focus:outline-none"
+                          key={`delete-${task.id}`}
+                          className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 focus:outline-none"
                           onClick={(e) => openDeleteModal(e, task)}
                           title="Supprimer la tâche"
                         >
@@ -415,7 +450,8 @@ export const TaskBoard = ({
                         {/* Flèche droite - visible sauf pour le dernier taskboard */}
                         {index < dropZones.length - 1 && (
                           <button
-                            className="p-1 text-gray-500 hover:text-blue-500 focus:outline-none"
+                            key={`right-${task.id}`}
+                            className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 focus:outline-none"
                             onClick={(e) => moveTaskRight(e, task)}
                             title="Déplacer vers la droite"
                           >
@@ -427,7 +463,7 @@ export const TaskBoard = ({
                   );
                 })}
                 {zoneTasks.length === 0 && (
-                  <div className="text-gray-400 text-center p-2">
+                  <div className="text-gray-400 dark:text-gray-500 text-center p-2">
                     Pas de tâches
                   </div>
                 )}
@@ -440,20 +476,20 @@ export const TaskBoard = ({
       {/* Modal de confirmation de suppression */}
       {deleteModalOpen && taskToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-lg font-bold mb-4">Confirmer la suppression</h3>
-            <p className="mb-6">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4 dark:text-white">Confirmer la suppression</h3>
+            <p className="mb-6 dark:text-gray-300">
               Êtes-vous sûr de vouloir supprimer la tâche "{taskToDelete.title}" ?
             </p>
             <div className="flex justify-end space-x-4">
               <button
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
                 onClick={closeDeleteModal}
               >
                 Annuler
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
                 onClick={confirmDelete}
               >
                 Supprimer

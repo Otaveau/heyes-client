@@ -1,11 +1,17 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
 import { createTask, updateTask, deleteTask } from '../services/api/taskService';
-import { DateUtils } from '../utils/dateUtils';
+import { hasValidEventBoundaries } from '../utils/DateUtils';
 
+/**
+ * Hook gérant les mutations de tâches (création, mise à jour, suppression)
+ */
 export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holidays) => {
-  // Fonction utilitaire pour convertir une date inclusive en date exclusive
+  
+  /**
+   * Convertit une date inclusive en date exclusive pour FullCalendar
+   */
   const getExclusiveEndDate = useCallback((inclusiveDate) => {
     if (!inclusiveDate) return null;
 
@@ -14,7 +20,45 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
     return date;
   }, []);
 
-  // Mise à jour du statut d'une tâche (sans appel API)
+  /**
+   * Réinitialise l'état du formulaire de tâche
+   */
+  const resetFormState = useCallback(() => {
+    setCalendarState(prev => ({
+      ...prev,
+      isFormOpen: false,
+      selectedTask: null,
+      selectedDates: null,
+      taskboardDestination: null,
+      taskOriginId: null,
+      isProcessing: false
+    }));
+  }, [setCalendarState]);
+
+  /**
+   * Prépare un objet avec toutes les propriétés de date nulles
+   */
+  const getNullDatesObject = useMemo(() => ({
+    start: null,
+    end: null,
+    start_date: null,
+    end_date: null,
+    startDate: null,
+    endDate: null,
+    exclusiveEndDate: null,
+    extendedProps: {
+      inclusiveEndDate: null,
+      exclusiveEndDate: null,
+      start: null,
+      end: null,
+      start_date: null,
+      end_date: null
+    }
+  }), []);
+
+  /**
+   * Met à jour le statut d'une tâche (sans appel API)
+   */
   const updateTaskStatus = useCallback((taskId, updates) => {
     setTasks(prevTasks =>
       prevTasks.map(task =>
@@ -25,58 +69,45 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
     );
   }, [setTasks]);
 
-  // Mise à jour d'une tâche avec appel API
-  // Modification de handleTaskUpdate dans useTaskMutationHandlers.js
-  // Cette modification garantit que handleTaskUpdate respecte les dates null
-
+  /**
+   * Met à jour une tâche (avec appel API optionnel)
+   */
   const handleTaskUpdate = useCallback(async (taskId, updates, options = {}) => {
     const { revertFunction = null, successMessage = null, skipApiCall = false } = options;
+    
     try {
       setCalendarState((prev) => ({ ...prev, isProcessing: true }));
 
       const existingTask = tasks.find(task => task.id.toString() === taskId.toString());
+      if (!existingTask) {
+        throw new Error(`Tâche avec id ${taskId} non trouvée`);
+      }
 
-      // Modification importante: vérifier si les dates doivent être nulles
+      // Vérifier si on supprime les dates
       const isRemovingDates = updates.start === null && updates.end === null;
 
-      // Préparer les mises à jour avec gestion des dates
+      // Préparer les mises à jour
       let completeUpdates = {
         ...updates,
         title: updates.title || existingTask.title
       };
 
-      // Seulement convertir les dates si nous ne sommes pas en train de les supprimer
+      // Traitement des dates
       if (!isRemovingDates && updates.extendedProps?.inclusiveEndDate && !updates.end) {
-        // Convertir la date inclusive en date exclusive pour FullCalendar
         const exclusiveEndDate = getExclusiveEndDate(updates.extendedProps.inclusiveEndDate);
-
         completeUpdates = {
           ...completeUpdates,
-          end: exclusiveEndDate, // Date exclusive pour FullCalendar
-          exclusiveEndDate: exclusiveEndDate // Stockage explicite de la date exclusive
+          end: exclusiveEndDate,
+          exclusiveEndDate
         };
-      }
-
-      // Si les dates doivent être nulles, s'assurer qu'elles le sont partout
-      if (isRemovingDates) {
+      } else if (isRemovingDates) {
+        // Réinitialiser toutes les dates
         completeUpdates = {
           ...completeUpdates,
-          start: null,
-          end: null,
-          start_date: null,
-          end_date: null,
-          startDate: null,
-          endDate: null,
-          exclusiveEndDate: null,
-          // S'assurer que extendedProps existe et contient aussi des dates nulles
+          ...getNullDatesObject,
           extendedProps: {
             ...(completeUpdates.extendedProps || {}),
-            inclusiveEndDate: null,
-            exclusiveEndDate: null,
-            start: null,
-            end: null,
-            start_date: null,
-            end_date: null
+            ...getNullDatesObject.extendedProps
           }
         };
       }
@@ -84,13 +115,10 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
       // Mise à jour locale
       updateTaskStatus(taskId, completeUpdates);
 
-      // Préparation des données pour l'API avec garantie que toutes les dates sont traitées correctement
-      const apiUpdates = { ...completeUpdates };
-
       // Appel API si nécessaire
       let apiResponse = completeUpdates;
       if (!skipApiCall) {
-        apiResponse = await updateTask(taskId, apiUpdates);
+        apiResponse = await updateTask(taskId, completeUpdates);
       }
 
       if (successMessage) {
@@ -109,92 +137,168 @@ export const useTaskMutationHandlers = (setTasks, setCalendarState, tasks, holid
     } finally {
       setCalendarState((prev) => ({ ...prev, isProcessing: false }));
     }
-  }, [setCalendarState, updateTaskStatus, tasks, getExclusiveEndDate]);
+  }, [setCalendarState, updateTaskStatus, tasks, getExclusiveEndDate, getNullDatesObject]);
 
+  /**
+   * Vérifie si une tâche peut être placée dans la colonne "En cours"
+   */
+  const canTaskBeInProgress = useCallback((taskData) => {
+    const hasOwner = Boolean(taskData.resourceId || taskData.owner_id);
+    const hasDates = Boolean(taskData.start || taskData.start_date);
+    return hasOwner && hasDates;
+  }, []);
 
-  // Soumission du formulaire de tâche (création/modification)
-  const handleTaskSubmit = useCallback(async (formData) => {
-    if (!formData?.title) {
-      toast.error(ERROR_MESSAGES.TITLE_REQUIRED, TOAST_CONFIG);
-      return;
-    }
-
+  /**
+   * Prépare les données d'une tâche pour sauvegarde
+   */
+  const prepareTaskData = useCallback((formData) => {
     const startDate = formData.startDate || formData.start;
     const inclusiveEndDate = formData.endDate || formData.end;
+    const exclusiveEndDate = inclusiveEndDate ? getExclusiveEndDate(inclusiveEndDate) : null;
+    const isConge = formData.isConge === true;
+    
+    return {
+      ...formData,
+      title: (formData.title || '').trim(),
+      description: (formData.description || '').trim(),
+      start: startDate,
+      end: exclusiveEndDate,
+      exclusiveEndDate,
+      startDate: startDate,
+      endDate: inclusiveEndDate,
+      extendedProps: {
+        ...(formData.extendedProps || {}),
+        inclusiveEndDate,
+        exclusiveEndDate,
+        statusId: formData.statusId,
+        isConge,
+        description: formData.description
+      }
+    };
+  }, [getExclusiveEndDate]);
 
-    // Validation des dates - utiliser la date inclusive pour validation
-    if ((startDate && inclusiveEndDate) && !DateUtils.hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
-      toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
-      return;
-    }
-
+  /**
+   * Gère la soumission du formulaire de tâche (création/modification)
+   */
+  const handleTaskSubmit = useCallback(async (formData, options = {}) => {
+    const { taskboardDestination = null } = options;
+    
     try {
       setCalendarState(prev => ({ ...prev, isProcessing: true }));
 
-      const taskData = {
-        title: formData.title.trim(),
-        description: (formData.description || '').trim(),
-        start: startDate,
-        end: formData.extendedProps?.inclusiveEndDate, // Date exclusive pour FullCalendar
-        exclusiveEndDate: formData.exclusiveEndDate,
-        resourceId: formData.resourceId ? parseInt(formData.resourceId, 10) : null,
-        statusId: formData.statusId,
-        extendedProps: {
-          ...(formData.extendedProps || {}),
-          inclusiveEndDate: inclusiveEndDate, // Stocker la date inclusive dans extendedProps
-          statusId: formData.statusId
-        }
-      };
-
-      const taskId = formData.id;
-
-      let updatedTask;
-      // Cas de mise à jour d'une tâche existante
-      if (taskId) {
-        updateTaskStatus(taskId, taskData);
-        updatedTask = await updateTask(taskId, taskData);
-        toast.success('Tâche mise à jour', TOAST_CONFIG);
+      // Validation du titre
+      if (!formData?.title) {
+        toast.error(ERROR_MESSAGES.TITLE_REQUIRED, TOAST_CONFIG);
+        return null;
       }
-      // Cas de création d'une nouvelle tâche
-      else {
-        updatedTask = await createTask(taskData);
+
+      // Vérifier si la tâche peut être "En cours" (si c'est la destination)
+      if (taskboardDestination === '2' && !canTaskBeInProgress(formData)) {
+        // Rechercher le statut d'origine
+        const originalTask = tasks.find(task => task.id.toString() === formData.id.toString());
+        const originalStatusId = originalTask?.statusId || '1';
+        const targetStatusId = originalStatusId === '2' ? '1' : originalStatusId;
+        
+        // Préparer les mises à jour sans dates/propriétaire
+        const updates = {
+          ...formData,
+          ...getNullDatesObject,
+          resourceId: null,
+          owner_id: null,
+          statusId: targetStatusId,
+          description: formData.description,
+          extendedProps: {
+            ...(formData.extendedProps || {}),
+            ...getNullDatesObject.extendedProps,
+            statusId: targetStatusId,
+            description: formData.description
+          }
+        };
+
+        // Mettre à jour la tâche
+        await updateTask(formData.id, updates);
+        updateTaskStatus(formData.id, updates);
+        
+        toast.warning("Tâche non modifiée - Un propriétaire et des dates sont requis pour les tâches en cours", TOAST_CONFIG);
+        resetFormState();
+        return updates;
+      } 
+      
+      // Mettre à jour le statut si nécessaire
+      if (taskboardDestination === '2') {
+        formData = {
+          ...formData,
+          statusId: '2',
+          extendedProps: {
+            ...(formData.extendedProps || {}),
+            statusId: '2',
+            description: formData.description
+          }
+        };
+      }
+
+      // Validation des dates
+      const startDate = formData.startDate || formData.start;
+      const inclusiveEndDate = formData.endDate || formData.end;
+      
+      if ((startDate && inclusiveEndDate) && !hasValidEventBoundaries(startDate, inclusiveEndDate, holidays)) {
+        toast.warning('Les dates de début et de fin doivent être des jours ouvrés', TOAST_CONFIG);
+        return null;
+      }
+
+      // Déterminer si c'est une création ou modification
+      const isNewTask = !formData.id;
+      
+      // Préparer les données complètes
+      const taskData = prepareTaskData(formData);
+      let result;
+      
+      if (isNewTask) {
+        // Création d'une nouvelle tâche
+        result = await createTask(taskData);
         const newTask = {
-          id: updatedTask.id,
+          id: result.id,
           ...taskData,
           allDay: true
         };
-
+        
         setTasks(prevTasks => [...prevTasks, newTask]);
-
         toast.success('Tâche créée', TOAST_CONFIG);
+      } else {
+        // Mise à jour d'une tâche existante
+        updateTaskStatus(formData.id, taskData);
+        result = await updateTask(formData.id, taskData);
+        toast.success('Tâche mise à jour', TOAST_CONFIG);
       }
 
-      // Terminer et réinitialiser
-      setCalendarState(prev => ({
-        ...prev,
-        isFormOpen: false,
-        selectedTask: null,
-      }));
-
-      return updatedTask;
+      resetFormState();
+      return result;
     } catch (error) {
-      toast.error(formData.id ? ERROR_MESSAGES.UPDATE_FAILED : ERROR_MESSAGES.CREATE_FAILED, TOAST_CONFIG);
       console.error('Erreur lors de la soumission de la tâche:', error);
+      toast.error(formData.id ? ERROR_MESSAGES.UPDATE_FAILED : ERROR_MESSAGES.CREATE_FAILED, TOAST_CONFIG);
+      resetFormState();
       return null;
     } finally {
       setCalendarState(prev => ({ ...prev, isProcessing: false }));
     }
-  }, [holidays, setCalendarState, updateTaskStatus, setTasks]);
+  }, [
+    holidays, setCalendarState, updateTaskStatus, setTasks, tasks, 
+    getNullDatesObject, canTaskBeInProgress, prepareTaskData, resetFormState
+  ]);
 
-  // Suppression d'une tâche
+  /**
+   * Supprime une tâche
+   */
   const handleDeleteTask = useCallback(async (taskId) => {
     try {
       setCalendarState(prev => ({ ...prev, isProcessing: true }));
-
+      
+      // Supprimer localement d'abord
       setTasks(prevTasks => prevTasks.filter(task => task.id.toString() !== taskId.toString()));
-
+      
+      // Puis supprimer sur le serveur
       await deleteTask(taskId);
-
+      
       toast.success('Tâche supprimée', TOAST_CONFIG);
       return true;
     } catch (error) {

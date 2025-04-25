@@ -10,18 +10,21 @@ export const useTaskHandlers = (
   tasks,
   dropZoneRefs,
   dropZones,
-  holidays
+  holidays,
+  calendarRef
 ) => {
-  // Importer les différents groupes de gestionnaires
+  
   const dragDropStyleHandlers = useDragDropStyleHandlers(dropZoneRefs, dropZones);
+
   const taskMutationHandlers = useTaskMutationHandlers(setTasks, setCalendarState, tasks, holidays);
+
   const calendarEventHandlers = useCalendarEventHandlers(
     setCalendarState, 
     tasks, 
-    taskMutationHandlers.updateTaskStatus, 
     taskMutationHandlers.handleTaskUpdate,
     holidays
   );
+
   const externalTaskHandlers = useExternalTaskHandlers(
     setTasks,
     tasks,
@@ -29,11 +32,10 @@ export const useTaskHandlers = (
     taskMutationHandlers.updateTaskStatus,
     taskMutationHandlers.handleTaskUpdate,
     holidays,
-    dropZoneRefs,
-    dropZones
+    dropZones,
+    calendarRef
   );
 
-  // Retourner toutes les fonctions nécessaires
   return {
     ...taskMutationHandlers,
     ...calendarEventHandlers,

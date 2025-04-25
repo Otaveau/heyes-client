@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import { DateUtils } from '../utils/dateUtils';
+import { isHolidayOrWeekend } from '../utils/DateUtils';
 
 
 export const useExternalTaskHandlers = (
@@ -11,8 +11,7 @@ export const useExternalTaskHandlers = (
   updateTaskStatus,
   handleTaskUpdate,
   holidays,
-  dropZoneRefs,
-  dropZones
+  dropZones = [] // Ajouter une valeur par défaut (tableau vide)
 ) => {
   // Référence pour l'élément fantôme
   const ghostElementRef = useRef(null);
@@ -146,6 +145,12 @@ export const useExternalTaskHandlers = (
         return null;
       }
 
+      // Vérifier si dropZones est un tableau
+      if (!Array.isArray(dropZones)) {
+        console.warn('dropZones n\'est pas un tableau:', dropZones);
+        return null;
+      }
+
       // Vérifier chaque élément pour voir si la position est au-dessus
       for (let i = 0; i < droppableElements.length; i++) {
         const element = droppableElements[i];
@@ -269,8 +274,6 @@ export const useExternalTaskHandlers = (
   }, []);
 
   // Fin du glisser-déposer
-  // Dans votre fonction handleEventDragStop de useExternalTaskHandlers.js
-
   const handleEventDragStop = useCallback(async (info) => {
 
     const eventId = info.event.id;
@@ -346,7 +349,7 @@ export const useExternalTaskHandlers = (
           simulateImmediateAppearance(taskId, dropZone);
         }
 
-        // CORRECTION: Préparer les mises à jour pour le déplacement vers le taskboard
+        // Préparer les mises à jour pour le déplacement vers le taskboard
         // en s'assurant que TOUTES les propriétés liées aux dates sont nulles
         const updates = {
           // Propriétés de ressource
@@ -441,7 +444,7 @@ export const useExternalTaskHandlers = (
     const exclusiveEndDate = new Date(startDate.getTime() + 86400000);
 
     // Vérifier si c'est un jour férié ou un weekend
-    if (DateUtils.isHolidayOrWeekend(startDate, holidays)) {
+    if (isHolidayOrWeekend(startDate, holidays)) {
       toast.warning('Impossible de planifier sur un jour non ouvré', TOAST_CONFIG);
       if (info.draggedEl) {
         info.draggedEl.style.opacity = '1';
