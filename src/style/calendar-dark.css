@@ -280,7 +280,7 @@
 .dark .fc-theme-standard td,
 .dark .fc-theme-standard th,
 .dark .fc .fc-scrollgrid {
-    border-color: #374151 !important;
+    border-color: #374151;
 }
 
 .dark .fc-timeline-lane:nth-child(even),
