@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Calendar, User } from 'lucide-react';
 import { formatDateTaskCard, getInclusiveEndDate } from '../../utils/DateUtils';
 import { prepareTaskData } from '../../utils/TaskUtils';
-import { cn } from '../../utils/StyleUtils';
+import { cn } from '../../lib/utils';
 
 export const TaskCard = memo(({
   task,
@@ -12,7 +12,7 @@ export const TaskCard = memo(({
   className = '',
   disabled = false
 }) => {
-  // Handlers: les hooks doivent être appelés en haut du composant
+
   const handleDragStart = useCallback((e) => {
     if (!task || disabled) {
       e.preventDefault();
@@ -69,7 +69,6 @@ export const TaskCard = memo(({
     }
   }, [handleClick]);
 
-  // Si task est null, on retourne null après avoir défini tous les hooks
   if (!task) return null;
 
   // Préparation des données pour l'affichage

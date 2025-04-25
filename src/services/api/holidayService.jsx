@@ -1,7 +1,7 @@
 import { createApiClient } from './apiClient';
 
 // Création d'une instance API spécifique
-const externalApi = createApiClient();
+const api = createApiClient();
 
 /**
  * Récupère les jours fériés français pour une année donnée
@@ -13,10 +13,9 @@ export const fetchHolidays = async (year) => {
         throw new Error('Année invalide');
     }
 
-    // Utilisation d'une URL complète qui sera reconnue comme externe par le client API
-    return externalApi.get(`https://calendrier.api.gouv.fr/jours-feries/metropole/${year}.json`, {
-        headers: { Accept: 'application/json' }
-    });
+    // Utiliser votre propre serveur comme proxy au lieu d'appeler directement l'API externe
+    // Cela évite les problèmes de CORS
+    return api.get(`/api/holidays/${year}`);
 };
 
 const holidaysService = {

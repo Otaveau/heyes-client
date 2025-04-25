@@ -75,6 +75,10 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--color-border-light);
   }
+
+  .logo-text {
+    color: rgb(0 33 105);
+  }
   
   /* ===================================
    * 3. HeaderToolbar

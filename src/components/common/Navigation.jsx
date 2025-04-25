@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import logoImage from '../../assets/hays.png';
 import { 
   Calendar, 
   Users, 
@@ -160,17 +159,11 @@ export default function Navigation() {
       <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200 shadow-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20">
-            {/* Logo et navigation principale */}
+            {/*Navigation principale */}
             <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <Link to="/calendar" className="flex items-center" aria-label="Accueil">
-                  <img src={logoImage} alt="Logo Heyes" className="h-10 w-auto" />
-                  <span className="text-2xl font-bold ml-1 dark:text-white style={{ color: 'rgb(0 33 105)' }}">Eyes</span>
-                </Link>
-              </div>
 
               {/* Navigation desktop */}
-              <nav className="hidden sm:ml-10 sm:flex sm:space-x-6" aria-label="Navigation principale">
+              <nav className="hidden sm:flex sm:space-x-6" aria-label="Navigation principale">
                 {navItems.map((item) => (
                   <NavItem
                     key={item.path}
