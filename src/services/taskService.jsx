@@ -1,5 +1,5 @@
 import { createApiClient } from './apiClient';
-import { ERROR_MESSAGES } from '../../constants/constants';
+import { ERROR_MESSAGES } from '../constants/constants';
 
 // Création d'une instance API pour les opérations sur les tâches
 const api = createApiClient();

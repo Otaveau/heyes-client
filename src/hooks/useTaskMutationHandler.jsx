@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { ERROR_MESSAGES, TOAST_CONFIG } from '../constants/constants';
 import { toast } from 'react-toastify';
-import taskService from '../services/api/taskService';
+import taskService from '../services/taskService';
 import { hasValidEventBoundaries } from '../utils/DateUtils';
 
 /**

@@ -6,8 +6,8 @@ import frLocale from '@fullcalendar/core/locales/fr';
 import { CalendarNavigation } from './CalendarNavigation';
 import { getWeekNumber, navigateToToday } from '../../utils/DateUtils';
 import { createMemberColorMap } from '../../utils/ColorUtils';
-import '../../style/calendar-main.css';
-import '../../style/calendar-dark.css';
+import '../../assets/style/calendar-main.css';
+import '../../assets/style/calendar-dark.css';
 import { 
   formatTasksForCalendar, 
   handleResourceLabelMount, 

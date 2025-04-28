@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo  } from 'react';
-import ownerService from '../../services/api/ownerService';
-import teamService from '../../services/api/teamService';
+import ownerService from '../../services/ownerService';
+import teamService from '../../services/teamService';
 import ConfirmationModal from '../ui/confirmationModal';
 import { OwnerList } from './OwnerList';
 import { OwnerDetails } from './OwnerDetails';

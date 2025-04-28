@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import teamService from '../../services/api/teamService';
+import teamService from '../../services/teamService';
 import { Card } from '../ui/card';
 import ConfirmationModal from '../ui/confirmationModal';
 import { TeamAddForm } from './TeamAddForm';

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import taskService from '../services/api/taskService';
-import ownerService from '../services/api/ownerService';
-import holidayService from '../services/api/holidayService';
-import statusService from '../services/api/statusService';
-import teamService from '../services/api/teamService';
+import taskService from '../services/taskService';
+import ownerService from '../services/ownerService';
+import holidayService from '../services/holidayService';
+import statusService from '../services/statusService';
+import teamService from '../services/teamService';
 
 export const useCalendarData = () => {
   const [tasks, setTasks] = useState([]);

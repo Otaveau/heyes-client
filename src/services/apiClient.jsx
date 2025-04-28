@@ -1,4 +1,4 @@
-import { REQUEST_TIMEOUT } from "../../constants/constants";
+import { REQUEST_TIMEOUT } from "../constants/constants";
 
 // Déterminer l'URL de base de l'API en fonction de l'environnement
 const getApiBaseUrl = () => {

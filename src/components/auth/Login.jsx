@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
-import authService from '../../services/api/authService';
+import authService from '../../services/authService';
 
 const Login = () => {
   useTheme();
