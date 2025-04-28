@@ -750,3 +750,33 @@
       margin: 0 4px;
     }
   }
+
+  /* Style pour la surbrillance des zones de drop */
+.highlight-dropzone, [data-highlight="true"] {
+  box-shadow: 0 0 0 2px #4f46e5, 0 0 10px rgba(79, 70, 229, 0.5) !important;
+  background-color: rgba(79, 70, 229, 0.05) !important;
+  transform: scale(1.02);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Style pour l'indication de zone active */
+.potential-drop-target {
+  border: 1px dashed #4f46e5;
+}
+
+/* Styles pour l'effet de pulsation */
+.dropzone-pulse {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+  }
+}

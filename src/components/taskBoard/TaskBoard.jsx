@@ -6,7 +6,6 @@ import { TaskBoardZone } from './TaskBoardZone';
 import { DeleteTaskModal } from './DeleteTaskModal';
 import { addDropzonePulseEffect } from '../../utils/DndUtils';
 
-
 export const TaskBoard = ({
   dropZones = [],
   dropZoneRefs,
@@ -90,8 +89,15 @@ export const TaskBoard = ({
     // Vérifier la validité des références
     if (!effectiveRefs.current.every(ref => ref?.current)) return;
 
-    // Nettoyage des anciens draggables
+    // Nettoyage des anciens draggables et styles
     draggablesRef.current.forEach(draggable => draggable?.destroy());
+    effectiveRefs.current.forEach(ref => {
+      if (ref?.current) {
+        // Nettoyer les classes
+        ref.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse', 'highlight-dropzone');
+        ref.current.removeAttribute('data-highlight');
+      }
+    });
     draggablesRef.current = [];
 
     // Création des nouveaux draggables
@@ -135,7 +141,8 @@ export const TaskBoard = ({
             // Désactiver les effets visuels
             effectiveRefs.current.forEach((dropRef) => {
               if (dropRef?.current) {
-                dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse');
+                dropRef.current.classList.remove('potential-drop-target', 'dropzone-active', 'dropzone-pulse', 'highlight-dropzone');
+                dropRef.current.removeAttribute('data-highlight');
               }
             });
             setActiveDropZone(null);
@@ -159,18 +166,30 @@ export const TaskBoard = ({
         if (activeDropZone !== index) {
           setActiveDropZone(index);
           addDropzonePulseEffect(element, true);
+          
+          // Utiliser un attribut data pour le ciblage CSS
+          element.setAttribute('data-highlight', 'true');
+          element.classList.add('highlight-dropzone'); // Utiliser une classe existante ou définie dans vos CSS
         }
       });
 
       element.addEventListener('dragleave', () => {
         addDropzonePulseEffect(element, false);
         setActiveDropZone(null);
+        
+        // Supprimer l'attribut et la classe
+        element.removeAttribute('data-highlight');
+        element.classList.remove('highlight-dropzone');
       });
 
       element.addEventListener('drop', (e) => {
         e.preventDefault();
         addDropzonePulseEffect(element, false);
         setActiveDropZone(null);
+        
+        // Supprimer l'attribut et la classe
+        element.removeAttribute('data-highlight');
+        element.classList.remove('highlight-dropzone');
       });
     });
 
