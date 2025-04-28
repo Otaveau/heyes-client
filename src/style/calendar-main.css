@@ -466,6 +466,13 @@
    * =================================== */
   
   /* Style des événements */
+  .fc-h-event {
+    background-color: rgba(0, 0, 0, 0);  
+  }
+  .fc-event-main{
+    height: 30px;
+  }
+
   .fc-event {
     border-radius: 4px;
     border: none;
