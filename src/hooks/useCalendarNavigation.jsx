@@ -1,7 +1,11 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useEffect } from 'react';
 import { DAYS_IN_WEEK, VIEW_TYPES, ANIMATION_DELAY } from '../constants/constants';
 
 export const useCalendarNavigation = (calendarRef, selectedYear, setSelectedYear) => {
+  // Référence pour stocker des éléments nécessaires à la navigation
+  const timelineBodyRef = useRef(null);
+  const timelineHeadersRef = useRef([]);
+
   // Mois en français pour les boutons
   const months = useMemo(() => [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -15,6 +19,40 @@ export const useCalendarNavigation = (calendarRef, selectedYear, setSelectedYear
     if (!calendarRef.current) return null;
     return calendarRef.current.getApi();
   }, [calendarRef]);
+
+  /**
+   * Effect pour capturer les références au DOM nécessaires pour la navigation
+   * au lieu d'utiliser document.querySelector
+   */
+  useEffect(() => {
+    const calendarApi = getCalendarApi();
+    if (!calendarApi) return;
+
+    // Cette fonction sera exécutée après chaque render complet
+    const updateTimelineRefs = () => {
+      // Utiliser des refs pour stocker les éléments plutôt que de les chercher à chaque fois
+      // Accéder au DOM à partir de l'élément racine du calendrier
+      const calendarElement = calendarRef.current?.el;
+      
+      if (calendarElement) {
+        const timelineBody = calendarElement.querySelector('.fc-timeline-body');
+        if (timelineBody) {
+          timelineBodyRef.current = timelineBody;
+        }
+
+        const headers = calendarElement.querySelectorAll('.fc-timeline-slot[data-date]');
+        if (headers && headers.length) {
+          timelineHeadersRef.current = Array.from(headers);
+        }
+      }
+    };
+
+    // Mettre à jour les refs après un court délai pour s'assurer que le DOM est prêt
+    const timeoutId = setTimeout(updateTimelineRefs, ANIMATION_DELAY);
+
+    // Nettoyer le timeout quand le composant est démonté
+    return () => clearTimeout(timeoutId);
+  }, [getCalendarApi, calendarRef]);
 
   /**
    * Calcule la date du lundi pour la vue semaine
@@ -50,6 +88,39 @@ export const useCalendarNavigation = (calendarRef, selectedYear, setSelectedYear
   }, []);
 
   /**
+   * Scroll vers un mois spécifique dans la timeline en utilisant les refs
+   */
+  const scrollToTimelineMonth = useCallback((monthIndex) => {
+    const timelineBody = timelineBodyRef.current;
+    const headers = timelineHeadersRef.current;
+    
+    if (!timelineBody || !headers || headers.length === 0) return;
+    
+    // Chercher l'en-tête qui correspond au mois
+    let targetHeader = null;
+    for (const header of headers) {
+      const headerDate = new Date(header.getAttribute('data-date'));
+      if (headerDate.getMonth() === monthIndex) {
+        targetHeader = header;
+        break;
+      }
+    }
+    
+    if (targetHeader) {
+      const rect = targetHeader.getBoundingClientRect();
+      const containerRect = timelineBody.getBoundingClientRect();
+      
+      const scrollLeft = rect.left + timelineBody.scrollLeft - containerRect.left - 
+                       (containerRect.width / 2) + (rect.width / 2);
+      
+      timelineBody.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  /**
    * Gère la navigation dans la vue année
    */
   const handleYearViewNavigation = useCallback((calendarApi, targetDate, monthIndex) => {
@@ -60,41 +131,11 @@ export const useCalendarNavigation = (calendarRef, selectedYear, setSelectedYear
       years: targetDate.getUTCFullYear() - calendarApi.getDate().getFullYear() 
     });
     
-    // Amélioration pour le défilement visuel
-    const scrollToTimelineMonth = () => {
-      const timelineBody = document.querySelector('.fc-timeline-body');
-      if (!timelineBody) return;
-      
-      const headers = document.querySelectorAll('.fc-timeline-slot[data-date]');
-      
-      let targetHeader = null;
-      for (const header of headers) {
-        const headerDate = new Date(header.getAttribute('data-date'));
-        if (headerDate.getMonth() === monthIndex) {
-          targetHeader = header;
-          break;
-        }
-      }
-      
-      if (targetHeader) {
-        const rect = targetHeader.getBoundingClientRect();
-        const containerRect = timelineBody.getBoundingClientRect();
-        
-        const scrollLeft = rect.left + timelineBody.scrollLeft - containerRect.left - 
-                         (containerRect.width / 2) + (rect.width / 2);
-        
-        timelineBody.scrollTo({
-          left: scrollLeft,
-          behavior: 'smooth'
-        });
-      }
-    };
-    
-    // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
+    // Utiliser requestAnimationFrame pour s'assurer que le DOM est mis à jour
     requestAnimationFrame(() => {
-      setTimeout(scrollToTimelineMonth, ANIMATION_DELAY);
+      setTimeout(() => scrollToTimelineMonth(monthIndex), ANIMATION_DELAY);
     });
-  }, []);
+  }, [scrollToTimelineMonth]);
 
   /**
    * Navigue vers un mois spécifique avec dates UTC
