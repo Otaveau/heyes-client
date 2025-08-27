@@ -74,6 +74,12 @@ export const CalendarView = () => {
 
   // Gérer le déplacement des tâches entre les taskboards
   const handleMoveTask = (taskId, newStatusId) => {
+    // Vérifier que taskId est valide
+    if (!taskId) {
+      console.error('ID de tâche invalide:', taskId);
+      return;
+    }
+
     // Trouver la tâche à déplacer
     const taskToMove = tasks.find(task => task.id.toString() === taskId.toString());
 

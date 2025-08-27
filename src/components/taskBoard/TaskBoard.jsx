@@ -79,6 +79,12 @@ export const TaskBoard = ({
   const moveTaskLeft = (e, task) => {
     e.stopPropagation(); // Empêcher le clic de se propager
 
+    // Vérifier que la tâche a un ID valide
+    if (!task || !task.id) {
+      console.error('Tâche invalide ou sans ID:', task);
+      return;
+    }
+
     // Trouver l'index de la zone actuelle
     const currentZoneIndex = dropZones.findIndex(zone => {
       const statusId = task.extendedProps?.statusId || task.statusId;
@@ -97,6 +103,12 @@ export const TaskBoard = ({
   // Fonction pour déplacer une tâche vers la droite (statut suivant)
   const moveTaskRight = (e, task) => {
     e.stopPropagation(); // Empêcher le clic de se propager
+
+    // Vérifier que la tâche a un ID valide
+    if (!task || !task.id) {
+      console.error('Tâche invalide ou sans ID:', task);
+      return;
+    }
 
     // Trouver l'index de la zone actuelle
     const currentZoneIndex = dropZones.findIndex(zone => {
