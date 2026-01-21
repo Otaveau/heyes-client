@@ -29,12 +29,12 @@ const Login = () => {
 
     try {
       // Utilisez le service auth au lieu d'un appel fetch direct
-      const data = await login({ 
+      const data = await login({
         name: formData.name,
         password: formData.password
       });
 
-      localStorage.setItem('token', data.token);
+      // Le dispatch LOGIN s'occupe déjà du stockage du token (AuthContext.jsx:17)
       dispatch({
         type: 'LOGIN',
         payload: { user: data.user, token: data.token }
