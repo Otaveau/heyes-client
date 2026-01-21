@@ -137,6 +137,8 @@ export const TaskBoard = ({
   useEffect(() => {
     if (!effectiveRefs.current || effectiveRefs.current.length === 0) return;
 
+    const observers = [];
+
     // Pour chaque dropzone, configurer un observateur de mutation
     effectiveRefs.current.forEach((ref, index) => {
       if (!ref || !ref.current) return;
@@ -155,10 +157,13 @@ export const TaskBoard = ({
 
       // Observer les changements d'enfants dans la zone
       observer.observe(ref.current, { childList: true });
-
-      // Nettoyer l'observateur lors du démontage
-      return () => observer.disconnect();
+      observers.push(observer);
     });
+
+    // Nettoyage correct de tous les observateurs lors du démontage
+    return () => {
+      observers.forEach(obs => obs.disconnect());
+    };
   }, [effectiveRefs, dropZones]);
 
 
