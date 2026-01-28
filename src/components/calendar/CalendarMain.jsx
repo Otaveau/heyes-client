@@ -58,7 +58,7 @@ const CALENDAR_CONFIG = {
 };
 
 
-export const CalendarMain = ({
+const CalendarMainComponent = ({
   calendarRef,
   tasks,
   resources,
@@ -206,3 +206,6 @@ export const CalendarMain = ({
     </div>
   );
 };
+
+// Export mémoïsé pour éviter les re-renders inutiles
+export const CalendarMain = React.memo(CalendarMainComponent);

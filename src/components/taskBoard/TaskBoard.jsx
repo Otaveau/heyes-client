@@ -5,7 +5,7 @@ import { getInclusiveEndDate } from '../../utils/DateUtils';
 import { addTaskAppearEffect, addDropzonePulseEffect } from '../../utils/DndUtils';
 import { useTheme } from '../../context/ThemeContext';
 
-export const TaskBoard = ({
+const TaskBoardComponent = ({
   dropZones = [],
   dropZoneRefs,
   externalTasks = [],
@@ -170,8 +170,8 @@ export const TaskBoard = ({
   // Initialisation des draggables FullCalendar pour le calendrier
   useEffect(() => {
     // S'assurer que dropZones est défini et non vide
+    // C'est normal que dropZones soit vide au premier rendu
     if (!dropZones || dropZones.length === 0) {
-      console.warn("Les dropZones ne sont pas disponibles");
       return;
     }
 
@@ -518,3 +518,6 @@ export const TaskBoard = ({
     </>
   );
 };
+
+// Export mémoïsé pour éviter les re-renders inutiles
+export const TaskBoard = React.memo(TaskBoardComponent);

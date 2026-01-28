@@ -1,16 +1,20 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { CalendarView } from './components/calendar/CalendarView';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import OwnerManagement from './components/owner/OwnerManagement';
-import TeamManagement from './components/team/TeamManagement';
 import Navigation from './components/common/Navigation';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Spinner from './components/ui/spinner';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+// Imports lazy pour le code splitting
+const CalendarView = React.lazy(() =>
+  import('./components/calendar/CalendarView').then(m => ({ default: m.CalendarView }))
+);
+const Login = React.lazy(() => import('./components/auth/Login'));
+const Register = React.lazy(() => import('./components/auth/Register'));
+const OwnerManagement = React.lazy(() => import('./components/owner/OwnerManagement'));
+const TeamManagement = React.lazy(() => import('./components/team/TeamManagement'));
 
 const PrivateWrapper = ({ children }) => {
   const { state } = useAuth();
@@ -41,15 +45,17 @@ const AppContent = () => {
     <BrowserRouter>
       {state.isAuthenticated && <Navigation />}
       <div className="flex justify-center mx-auto px-4 pt-5 transition-colors duration-200 bg-white dark:bg-gray-900 min-h-screen">
-        <Routes>
-          <Route path="/" element={<RootRedirect />} />
-          <Route path="/login" element={<PublicOnlyWrapper><Login /></PublicOnlyWrapper>} />
-          <Route path="/register" element={<PublicOnlyWrapper><Register /></PublicOnlyWrapper>} />
-          <Route path="/calendar" element={<PrivateWrapper><CalendarView /></PrivateWrapper>} />
-          <Route path="/owners" element={<PrivateWrapper><OwnerManagement /></PrivateWrapper>} />
-          <Route path="/teams" element={<PrivateWrapper><TeamManagement /></PrivateWrapper>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={<Spinner />}>
+          <Routes>
+            <Route path="/" element={<RootRedirect />} />
+            <Route path="/login" element={<PublicOnlyWrapper><Login /></PublicOnlyWrapper>} />
+            <Route path="/register" element={<PublicOnlyWrapper><Register /></PublicOnlyWrapper>} />
+            <Route path="/calendar" element={<PrivateWrapper><CalendarView /></PrivateWrapper>} />
+            <Route path="/owners" element={<PrivateWrapper><OwnerManagement /></PrivateWrapper>} />
+            <Route path="/teams" element={<PrivateWrapper><TeamManagement /></PrivateWrapper>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </div>
     </BrowserRouter>
    );
